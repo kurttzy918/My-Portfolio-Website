@@ -1,1219 +1,1516 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Courteny T. Madronero — Stock Controller & Data Entry</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --surface2: #161616;
-    --border: rgba(255,255,255,0.06);
-    --text: #e8e4dc;
-    --muted: #6b6560;
-    --accent: #c9a96e;
-    --accent2: #8b5e3c;
-    --ember: #ff6b35;
-    --glow: rgba(201,169,110,0.15);
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Courteny T. Madronero · Stock Controller</title>
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <!-- FONTS: Cabinet Grotesk from Fontshare + fallback -->
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@1,2,3,4,5,6,7,8,9&display=swap" rel="stylesheet" />
+  <style>
+    /* ---------- RESET & BASE ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  html { scroll-behavior: smooth; }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #161616;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8e4dc;
+      --muted: #6b6560;
+      --accent: #c9a96e;
+      --accent2: #8b5e3c;
+    }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 300;
-    overflow-x: hidden;
-    cursor: none;
-  }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: none; /* hide default cursor */
+    }
 
-  /* CUSTOM CURSOR */
-  .cursor {
-    position: fixed; top: 0; left: 0; z-index: 9999;
-    pointer-events: none;
-  }
-  .cursor-dot {
-    width: 6px; height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    transform: translate(-50%,-50%);
-    transition: transform 0.1s;
-  }
-  .cursor-ring {
-    width: 32px; height: 32px;
-    border: 1px solid rgba(201,169,110,0.4);
-    border-radius: 50%;
-    transform: translate(-50%,-50%);
-    transition: transform 0.15s ease, width 0.2s, height 0.2s, opacity 0.2s;
-  }
-  body:hover .cursor-ring { opacity: 1; }
+    /* ---------- SIMPLE CURSOR (only white dot) ---------- */
+    .cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 8px;
+      background: #ffffff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.15s, height 0.15s, background 0.15s;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+      will-change: transform;
+    }
 
-  /* ASH CANVAS */
-  #ash-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-  }
+    /* when hovering interactive elements: slightly bigger & glow */
+    .cursor.hover {
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      box-shadow: 0 0 24px rgba(201, 169, 110, 0.5);
+    }
 
-  /* NAVBAR */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1.5rem 4rem;
-    background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
-    backdrop-filter: blur(2px);
-  }
-  .nav-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    color: var(--accent);
-    text-decoration: none;
-  }
-  .nav-links {
-    display: flex; gap: 2.5rem;
-    list-style: none;
-  }
-  .nav-links a {
-    font-size: 0.75rem;
-    font-weight: 400;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-  .nav-links a:hover { color: var(--text); }
-  .nav-cta {
-    font-size: 0.72rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--accent) !important;
-    border: 1px solid rgba(201,169,110,0.3);
-    padding: 0.5rem 1.2rem;
-    border-radius: 1px;
-    transition: background 0.3s, color 0.3s !important;
-  }
-  .nav-cta:hover { background: var(--accent); color: var(--bg) !important; }
-  .hamburger {
-    display: none; flex-direction: column; gap: 5px;
-    cursor: pointer; background: none; border: none; padding: 4px;
-  }
-  .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: all 0.3s; }
+    /* ash canvas */
+    #ash-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
 
-  /* SECTIONS */
-  section { position: relative; z-index: 1; }
+    /* nav */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 4rem;
+      background: linear-gradient(to bottom, rgba(10, 10, 10, 0.95), transparent);
+      backdrop-filter: blur(2px);
+    }
+    .nav-logo {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover {
+      color: var(--text);
+    }
+    .nav-cta {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent) !important;
+      border: 1px solid rgba(201, 169, 110, 0.3);
+      padding: 0.5rem 1.2rem;
+      border-radius: 1px;
+      transition: background 0.3s, color 0.3s !important;
+    }
+    .nav-cta:hover {
+      background: var(--accent);
+      color: var(--bg) !important;
+    }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--text);
+      transition: all 0.3s;
+    }
 
-  /* HERO */
-  #hero {
-    min-height: 100vh;
-    display: flex; align-items: center;
-    padding: 0 4rem;
-    overflow: hidden;
-  }
-  .hero-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  .hero-text { animation: fadeUp 1s 0.3s both; }
-  .hero-eyebrow {
-    font-size: 0.72rem;
-    font-weight: 400;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 1.5rem;
-    display: flex; align-items: center; gap: 1rem;
-  }
-  .hero-eyebrow::before {
-    content: '';
-    display: block; width: 40px; height: 1px;
-    background: var(--accent);
-  }
-  h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(3rem, 6vw, 5.5rem);
-    font-weight: 300;
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-    margin-bottom: 1.5rem;
-  }
-  h1 em {
-    font-style: italic;
-    color: var(--accent);
-  }
-  .hero-desc {
-    font-size: 0.9rem;
-    line-height: 1.8;
-    color: var(--muted);
-    max-width: 400px;
-    margin-bottom: 2.5rem;
-  }
-  .hero-actions {
-    display: flex; gap: 1rem; flex-wrap: wrap;
-  }
-  .btn-primary {
-    display: inline-block;
-    padding: 0.85rem 2rem;
-    background: var(--accent);
-    color: var(--bg);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-  }
-  .btn-primary:hover { background: #d4b07a; transform: translateY(-2px); }
-  .btn-outline {
-    display: inline-block;
-    padding: 0.85rem 2rem;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.72rem;
-    font-weight: 400;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    text-decoration: none;
-    transition: border-color 0.3s, color 0.3s;
-  }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-  .hero-visual {
-    display: flex; justify-content: center; align-items: center;
-    animation: fadeIn 1.2s 0.6s both;
-    position: relative;
-  }
-  .hero-photo-frame {
-    position: relative;
-    width: 340px; height: 420px;
-  }
-  .hero-photo-frame::before {
-    content: '';
-    position: absolute;
-    inset: -12px;
-    border: 1px solid rgba(201,169,110,0.2);
-    z-index: 0;
-  }
-  .hero-photo-frame::after {
-    content: '';
-    position: absolute;
-    inset: -24px;
-    border: 1px solid rgba(201,169,110,0.07);
-    z-index: 0;
-  }
-  .hero-photo-inner {
-    width: 100%; height: 100%;
-    background: linear-gradient(145deg, #1a1410, #0f0e0c);
-    overflow: hidden;
-    position: relative;
-    z-index: 1;
-  }
-  .hero-photo-inner img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    filter: grayscale(20%) contrast(1.05);
-    opacity: 0.9;
-  }
-  .hero-photo-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(10,8,5,0.6) 0%, transparent 60%);
-    z-index: 2;
-  }
-  .hero-stats {
-    position: absolute;
-    bottom: -20px; right: -20px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 1.2rem 1.5rem;
-    z-index: 3;
-    animation: fadeUp 1s 1s both;
-  }
-  .hero-stat-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--accent);
-    line-height: 1;
-  }
-  .hero-stat-label {
-    font-size: 0.68rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 0.3rem;
-  }
+    /* sections */
+    section {
+      position: relative;
+      z-index: 1;
+    }
 
-  /* DIVIDER */
-  .divider {
-    width: 100%; height: 1px;
-    background: linear-gradient(to right, transparent, var(--border), transparent);
-    margin: 0 auto;
-  }
+    /* hero */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 0 4rem;
+      overflow: hidden;
+    }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .hero-text {
+      animation: fadeUp 1s 0.3s both;
+    }
+    .hero-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--accent);
+    }
+    h1 {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      margin-bottom: 1.5rem;
+    }
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 400px;
+      margin-bottom: 2.5rem;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-block;
+      padding: 0.85rem 2rem;
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .btn-primary:hover {
+      background: #d4b07a;
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      display: inline-block;
+      padding: 0.85rem 2rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: border-color 0.3s, color 0.3s;
+      cursor: none;
+    }
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 1.2s 0.6s both;
+      position: relative;
+    }
+    .hero-photo-frame {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      width: 340px;
+      height: 420px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #111;
+    }
+    .hero-real-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      border-radius: 28px;
+      transition: transform 0.6s ease;
+    }
+    .hero-photo-frame:hover .hero-real-image {
+      transform: scale(1.05);
+    }
+    .hero-photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.05));
+      pointer-events: none;
+      border-radius: 28px;
+    }
+    .hero-stats {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .hero-stat-num {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .hero-stat-label {
+      font-size: 0.9rem;
+      color: #d1d5db;
+    }
 
-  /* SECTION LABEL */
-  .section-label {
-    font-size: 0.68rem;
-    font-weight: 400;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--accent);
-    display: flex; align-items: center; gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .section-label::before {
-    content: '';
-    display: block; width: 30px; height: 1px;
-    background: var(--accent);
-  }
+    /* divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+      margin: 0 auto;
+    }
 
-  /* ABOUT */
-  #about {
-    padding: 8rem 4rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .about-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 6rem;
-    align-items: start;
-  }
-  .about-left {}
-  h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2rem, 4vw, 3.2rem);
-    font-weight: 300;
-    line-height: 1.15;
-    margin-bottom: 1.5rem;
-  }
-  h2 em { font-style: italic; color: var(--accent); }
-  .about-desc {
-    font-size: 0.88rem;
-    line-height: 1.85;
-    color: var(--muted);
-    margin-bottom: 2rem;
-  }
-  .about-contacts { display: flex; flex-direction: column; gap: 0.8rem; }
-  .contact-item {
-    display: flex; align-items: center; gap: 0.8rem;
-    font-size: 0.8rem; color: var(--muted);
-  }
-  .contact-item a { color: var(--muted); text-decoration: none; transition: color 0.3s; }
-  .contact-item a:hover { color: var(--accent); }
-  .contact-icon {
-    width: 28px; height: 28px;
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-size: 0.75rem; color: var(--accent);
-  }
-  .about-right {}
-  .about-tags {
-    display: flex; flex-wrap: wrap; gap: 0.6rem;
-    margin-bottom: 2.5rem;
-  }
-  .tag {
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    padding: 0.4rem 0.9rem;
-    transition: all 0.3s;
-  }
-  .tag:hover { border-color: var(--accent); color: var(--accent); }
-  .lang-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-  }
-  .lang-title {
-    font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 1rem;
-  }
-  .lang-item { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.4rem; }
+    /* section label */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 30px;
+      height: 1px;
+      background: var(--accent);
+    }
 
-  /* EXPERIENCE CAROUSEL */
-  #experience {
-    padding: 8rem 0;
-    overflow: hidden;
-  }
-  .experience-header {
-    padding: 0 4rem;
-    max-width: 1200px;
-    margin: 0 auto 4rem;
-  }
-  .carousel-track-wrap {
-    position: relative;
-    overflow: hidden;
-  }
-  .carousel-track {
-    display: flex;
-    gap: 1.5rem;
-    padding: 1rem 4rem;
-    transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
-    will-change: transform;
-  }
-  .exp-card {
-    flex: 0 0 min(520px, 85vw);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 2.5rem;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.3s, transform 0.3s;
-  }
-  .exp-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(to right, var(--accent2), var(--accent));
-    transform: scaleX(0); transform-origin: left;
-    transition: transform 0.4s;
-  }
-  .exp-card:hover::before { transform: scaleX(1); }
-  .exp-card:hover { border-color: rgba(201,169,110,0.15); transform: translateY(-4px); }
-  .exp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
-  .exp-company {
-    font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 0.4rem;
-  }
-  .exp-role {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.4rem; font-weight: 400; color: var(--text);
-  }
-  .exp-period {
-    font-size: 0.72rem; color: var(--muted);
-    border: 1px solid var(--border); padding: 0.3rem 0.7rem;
-    white-space: nowrap;
-  }
-  .exp-items { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
-  .exp-items li {
-    font-size: 0.82rem; line-height: 1.7; color: var(--muted);
-    padding-left: 1rem; position: relative;
-  }
-  .exp-items li::before {
-    content: '—'; position: absolute; left: 0;
-    color: var(--accent); font-size: 0.7rem; top: 0.1rem;
-  }
-  .carousel-nav {
-    display: flex; gap: 0.8rem; align-items: center;
-    padding: 2rem 4rem 0;
-    max-width: 1200px; margin: 0 auto;
-  }
-  .carousel-btn {
-    width: 44px; height: 44px;
-    border: 1px solid var(--border);
-    background: none; cursor: pointer;
-    color: var(--muted); font-size: 1rem;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.3s;
-  }
-  .carousel-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .carousel-dots { display: flex; gap: 0.5rem; margin-left: 1rem; }
-  .dot {
-    width: 20px; height: 1px; background: var(--border);
-    transition: all 0.3s; cursor: pointer;
-  }
-  .dot.active { background: var(--accent); width: 36px; }
+    /* about */
+    #about {
+      padding: 8rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 6rem;
+      align-items: start;
+    }
+    h2 {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    h2 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .about-desc {
+      font-size: 0.88rem;
+      line-height: 1.85;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+    .about-contacts {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .contact-item a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .contact-item a:hover {
+      color: var(--accent);
+    }
+    .contact-icon {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      color: var(--accent);
+    }
+    .about-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 2.5rem;
+    }
+    .tag {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+      transition: all 0.3s;
+      cursor: none;
+    }
+    .tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .lang-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .lang-title {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .lang-item {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
 
-  /* SKILLS */
-  #skills {
-    padding: 8rem 4rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .skills-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 3rem;
-  }
-  .skill-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 2rem;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s, border-color 0.3s;
-  }
-  .skill-card::after {
-    content: '';
-    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(to right, transparent, var(--accent), transparent);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .skill-card:hover { transform: translateY(-3px); border-color: rgba(201,169,110,0.15); }
-  .skill-card:hover::after { opacity: 1; }
-  .skill-icon {
-    font-size: 1.4rem; margin-bottom: 1rem;
-    filter: grayscale(0.3);
-  }
-  .skill-name {
-    font-size: 0.8rem; font-weight: 500;
-    letter-spacing: 0.05em; margin-bottom: 0.5rem;
-    color: var(--text);
-  }
-  .skill-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.6; }
-  .skill-bar {
-    margin-top: 1.2rem;
-    height: 1px; background: var(--border);
-    position: relative; overflow: visible;
-  }
-  .skill-fill {
-    position: absolute; top: 0; left: 0; height: 100%;
-    background: linear-gradient(to right, var(--accent2), var(--accent));
-    transition: width 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
-    transform-origin: left;
-  }
-  .skill-level {
-    position: absolute; right: 0; top: -18px;
-    font-size: 0.65rem; letter-spacing: 0.1em; color: var(--accent);
-  }
+    /* experience carousel */
+    #experience {
+      padding: 8rem 0;
+      overflow: hidden;
+    }
+    .experience-header {
+      padding: 0 4rem;
+      max-width: 1200px;
+      margin: 0 auto 4rem;
+    }
+    .carousel-track-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+    .carousel-track {
+      display: flex;
+      gap: 1.5rem;
+      padding: 1rem 4rem;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+    .exp-card {
+      flex: 0 0 min(520px, 85vw);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .exp-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(to right, var(--accent2), var(--accent));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s;
+    }
+    .exp-card:hover::before {
+      transform: scaleX(1);
+    }
+    .exp-card:hover {
+      border-color: rgba(201, 169, 110, 0.15);
+      transform: translateY(-4px);
+    }
+    .exp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+    .exp-company {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+    .exp-role {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--text);
+    }
+    .exp-period {
+      font-size: 0.72rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.7rem;
+      white-space: nowrap;
+    }
+    .exp-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .exp-items li {
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--muted);
+      padding-left: 1rem;
+      position: relative;
+    }
+    .exp-items li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+      top: 0.1rem;
+    }
+    .carousel-nav {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      padding: 2rem 4rem 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .carousel-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      background: none;
+      cursor: none;
+      color: var(--muted);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    .carousel-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .carousel-dots {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: 1rem;
+    }
+    .dot {
+      width: 20px;
+      height: 1px;
+      background: var(--border);
+      transition: all 0.3s;
+      cursor: none;
+    }
+    .dot.active {
+      background: var(--accent);
+      width: 36px;
+    }
 
-  /* EDUCATION */
-  #education {
-    padding: 8rem 4rem;
-  }
-  .edu-inner {
-    max-width: 1200px; margin: 0 auto;
-  }
-  .edu-card {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 2rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 2.5rem;
-    max-width: 600px;
-    margin-top: 3rem;
-    transition: border-color 0.3s;
-  }
-  .edu-card:hover { border-color: rgba(201,169,110,0.2); }
-  .edu-year {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.5rem; font-weight: 300;
-    color: var(--accent); opacity: 0.5;
-    line-height: 1; writing-mode: vertical-rl; text-orientation: mixed;
-    letter-spacing: 0.1em;
-  }
-  .edu-degree {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.3rem; font-weight: 400; margin-bottom: 0.4rem;
-  }
-  .edu-school { font-size: 0.78rem; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 0.3rem; }
-  .edu-location { font-size: 0.75rem; color: var(--muted); }
-  .edu-period { font-size: 0.72rem; color: var(--muted); margin-top: 0.8rem; }
+    /* ---------- TUTORIALS (updated with new videos) ---------- */
+    #tutorials {
+      padding: 8rem 0;
+      overflow: hidden;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .tutorials-header {
+      padding: 0 4rem 3rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .tutorial-slider-wrap {
+      position: relative;
+      overflow: hidden;
+      padding: 0 4rem;
+    }
+    .tutorial-slider {
+      display: flex;
+      gap: 2rem;
+      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+    .tutorial-card {
+      flex: 0 0 calc(33.333% - 1.4rem);
+      min-width: 280px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+    .tutorial-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(201, 169, 110, 0.3);
+    }
+    .tutorial-card iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: block;
+      border: none;
+    }
+    .tutorial-info {
+      padding: 1.2rem 1.2rem 1.5rem;
+    }
+    .tutorial-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+      line-height: 1.3;
+    }
+    .tutorial-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+    .tutorial-nav {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 0 0;
+    }
+    .tutorial-dots {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: 1rem;
+    }
+    .tutorial-dots .dot {
+      width: 24px;
+      height: 2px;
+      background: var(--border);
+      transition: all 0.3s;
+      cursor: none;
+    }
+    .tutorial-dots .dot.active {
+      background: var(--accent);
+      width: 40px;
+    }
 
-  /* CONTACT CTA */
-  #contact {
-    padding: 8rem 4rem;
-    text-align: center;
-  }
-  .contact-inner {
-    max-width: 700px; margin: 0 auto;
-  }
-  .cta-big {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 300;
-    line-height: 1.1;
-    margin-bottom: 1.5rem;
-  }
-  .cta-big em { font-style: italic; color: var(--accent); }
-  .cta-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 3rem; line-height: 1.7; }
-  .cta-links {
-    display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
-    margin-top: 2rem;
-  }
-  .cta-link-item {
-    display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.75rem; color: var(--muted);
-    text-decoration: none; letter-spacing: 0.1em;
-    transition: color 0.3s;
-  }
-  .cta-link-item:hover { color: var(--accent); }
+    /* skills */
+    #skills {
+      padding: 8rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+      cursor: none;
+    }
+    .skill-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .skill-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(201, 169, 110, 0.15);
+    }
+    .skill-card:hover::after {
+      opacity: 1;
+    }
+    .skill-icon {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      filter: grayscale(0.3);
+    }
+    .skill-name {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .skill-desc {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .skill-bar {
+      margin-top: 1.2rem;
+      height: 1px;
+      background: var(--border);
+      position: relative;
+      overflow: visible;
+    }
+    .skill-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(to right, var(--accent2), var(--accent));
+      transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform-origin: left;
+      width: 0;
+    }
+    .skill-level {
+      position: absolute;
+      right: 0;
+      top: -18px;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+    }
 
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 2rem 4rem;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .footer-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 0.9rem; color: var(--muted);
-  }
-  .footer-copy { font-size: 0.72rem; color: var(--muted); opacity: 0.5; }
+    /* education */
+    #education {
+      padding: 8rem 4rem;
+    }
+    .edu-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .edu-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      max-width: 600px;
+      margin-top: 3rem;
+      transition: border-color 0.3s;
+    }
+    .edu-card:hover {
+      border-color: rgba(201, 169, 110, 0.2);
+    }
+    .edu-year {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: var(--accent);
+      opacity: 0.5;
+      line-height: 1;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      letter-spacing: 0.1em;
+    }
+    .edu-degree {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 400;
+      margin-bottom: 0.4rem;
+    }
+    .edu-school {
+      font-size: 0.78rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.3rem;
+    }
+    .edu-location {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .edu-period {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.8rem;
+    }
 
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  .reveal {
-    opacity: 0; transform: translateY(24px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-  }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
+    /* contact */
+    #contact {
+      padding: 8rem 4rem;
+      text-align: center;
+    }
+    .contact-inner {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .cta-big {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+    .cta-big em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .cta-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 3rem;
+      line-height: 1.7;
+    }
+    .cta-links {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .cta-link-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+      transition: color 0.3s;
+      cursor: none;
+    }
+    .cta-link-item:hover {
+      color: var(--accent);
+    }
 
-  /* MOBILE NAV */
-  .mobile-menu {
-    position: fixed; inset: 0; z-index: 99;
-    background: rgba(10,10,10,0.98);
-    backdrop-filter: blur(10px);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 2.5rem;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.3s;
-  }
-  .mobile-menu.open { opacity: 1; pointer-events: all; }
-  .mobile-menu a {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2rem; font-weight: 300;
-    color: var(--text); text-decoration: none;
-    transition: color 0.3s;
-  }
-  .mobile-menu a:hover { color: var(--accent); }
+    /* footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-name {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .footer-copy {
+      font-size: 0.72rem;
+      color: var(--muted);
+      opacity: 0.5;
+    }
 
-  /* RESPONSIVE */
-  @media (max-width: 900px) {
-    nav { padding: 1.2rem 1.5rem; }
-    .nav-links { display: none; }
-    .hamburger { display: flex; }
-    #hero { padding: 6rem 1.5rem 3rem; }
-    .hero-inner { grid-template-columns: 1fr; gap: 3rem; text-align: center; }
-    .hero-eyebrow { justify-content: center; }
-    .hero-desc { max-width: 100%; margin: 0 auto 2rem; }
-    .hero-actions { justify-content: center; }
-    .hero-visual { order: -1; }
-    .hero-photo-frame { width: 240px; height: 300px; }
-    .hero-stats { bottom: -10px; right: -10px; padding: 0.8rem 1rem; }
-    #about { padding: 5rem 1.5rem; }
-    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
-    .experience-header { padding: 0 1.5rem; }
-    .carousel-track { padding: 1rem 1.5rem; }
-    .carousel-nav { padding: 1.5rem 1.5rem 0; }
-    #skills { padding: 5rem 1.5rem; }
-    #education { padding: 5rem 1.5rem; }
-    #contact { padding: 5rem 1.5rem; }
-    footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
-  }
-  @media (max-width: 480px) {
-    h1 { font-size: 2.4rem; }
-    .hero-photo-frame { width: 200px; height: 260px; }
-    .exp-card { flex: 0 0 90vw; padding: 1.8rem; }
-    .skills-grid { grid-template-columns: 1fr; }
-    .edu-card { grid-template-columns: 1fr; }
-    .edu-year { writing-mode: horizontal-tb; font-size: 1.5rem; }
-  }
-  .hero-real-image{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    object-position:center top;
-    display:block;
-    border-radius:28px;
-    transition:transform 0.6s ease;
-}
+    /* animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-.hero-photo-frame{
-    position:relative;
-    overflow:hidden;
-    border-radius:28px;
-    width:340px;
-    height:420px;
-    box-shadow:0 25px 60px rgba(0,0,0,0.45);
-    border:1px solid rgba(255,255,255,0.08);
-    background:#111;
-}
+    /* mobile menu */
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      background: rgba(10, 10, 10, 0.98);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .mobile-menu.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .mobile-menu a {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .mobile-menu a:hover {
+      color: var(--accent);
+    }
 
-.hero-photo-frame:hover .hero-real-image{
-    transform:scale(1.05);
-}
-
-.hero-photo-overlay{
-    position:absolute;
-    inset:0;
-    background:
-    linear-gradient(
-      to top,
-      rgba(0,0,0,0.55),
-      rgba(0,0,0,0.05)
-    );
-    pointer-events:none;
-}
-
-.hero-stats{
-    position:absolute;
-    bottom:20px;
-    left:20px;
-    padding:14px 18px;
-    border-radius:18px;
-    backdrop-filter:blur(12px);
-    background:rgba(0,0,0,0.45);
-    border:1px solid rgba(255,255,255,0.08);
-}
-
-.hero-stat-num{
-    font-size:2rem;
-    font-weight:700;
-    color:#fff;
-}
-
-.hero-stat-label{
-    font-size:.9rem;
-    color:#d1d5db;
-}
-</style>
+    /* responsive */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      #hero { padding: 6rem 1.5rem 3rem; }
+      .hero-inner { grid-template-columns: 1fr; gap: 3rem; text-align: center; }
+      .hero-eyebrow { justify-content: center; }
+      .hero-desc { max-width: 100%; margin: 0 auto 2rem; }
+      .hero-actions { justify-content: center; }
+      .hero-visual { order: -1; }
+      .hero-photo-frame { width: 240px; height: 300px; }
+      .hero-stats { bottom: -10px; right: -10px; padding: 0.8rem 1rem; }
+      #about { padding: 5rem 1.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .experience-header { padding: 0 1.5rem; }
+      .carousel-track { padding: 1rem 1.5rem; }
+      .carousel-nav { padding: 1.5rem 1.5rem 0; }
+      #skills { padding: 5rem 1.5rem; }
+      #education { padding: 5rem 1.5rem; }
+      #contact { padding: 5rem 1.5rem; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+      .tutorial-slider-wrap { padding: 0 1.5rem; }
+      .tutorial-card { flex: 0 0 calc(100% - 0.5rem); }
+      .tutorials-header { padding: 0 1.5rem 2rem; }
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 2.4rem; }
+      .hero-photo-frame { width: 200px; height: 260px; }
+      .exp-card { flex: 0 0 90vw; padding: 1.8rem; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .edu-card { grid-template-columns: 1fr; }
+      .edu-year { writing-mode: horizontal-tb; font-size: 1.5rem; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ASH PARTICLE CANVAS -->
-<canvas id="ash-canvas"></canvas>
+  <!-- ASH CANVAS -->
+  <canvas id="ash-canvas"></canvas>
 
-<!-- CURSOR -->
-<div class="cursor" id="cursor">
-  <div class="cursor-ring" id="cursor-ring"></div>
-  <div class="cursor-dot" id="cursor-dot"></div>
-</div>
+  <!-- SIMPLE CURSOR (only dot) -->
+  <div class="cursor" id="cursor"></div>
 
-<!-- MOBILE MENU -->
-<div class="mobile-menu" id="mobile-menu">
-  <a href="#about" onclick="closeMobileMenu()">About</a>
-  <a href="#experience" onclick="closeMobileMenu()">Experience</a>
-  <a href="#skills" onclick="closeMobileMenu()">Skills</a>
-  <a href="#education" onclick="closeMobileMenu()">Education</a>
-  <a href="#contact" onclick="closeMobileMenu()">Contact</a>
-</div>
-
-<!-- NAV -->
-<nav>
-  <a href="#hero" class="nav-logo">CTM</a>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#experience">Experience</a></li>
-    <li><a href="#skills">Skills</a></li>
-    <li><a href="#education">Education</a></li>
-    <li><a href="#contact" class="nav-cta">Contact</a></li>
-  </ul>
-  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
-
-<!-- HERO -->
-<section id="hero">
-  <div class="hero-inner">
-
-    <div class="hero-text">
-      <div class="hero-eyebrow">Stock Controller & Data Specialist</div>
-
-      <h1>
-        Courteny T.<br>
-        <em>Madronero</em>
-      </h1>
-
-      <p class="hero-desc">
-        7 years of expertise in inventory management, data automation,
-        and ERP systems. Precision-driven professional transforming
-        supply chain chaos into seamless operations.
-      </p>
-
-      <div class="hero-actions">
-        <a href="#experience" class="btn-primary">View Experience</a>
-        <a href="#contact" class="btn-outline">Get In Touch</a>
-      </div>
-    </div>
-
-    <!-- YOUR IMAGE -->
-    <div class="hero-visual">
-      <div class="hero-photo-frame">
-
-        <img
-          src="me.png"
-          alt="Courteny Madronero"
-          class="hero-real-image"
-        >
-
-        <div class="hero-photo-overlay"></div>
-
-        <div class="hero-stats">
-          <div class="hero-stat-num">7+</div>
-          <div class="hero-stat-label">Years Experience</div>
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ABOUT -->
-<section id="about">
-  <div class="about-grid reveal">
-    <div class="about-left">
-      <div class="section-label">About</div>
-      <h2>Precision in Every<br><em>inventory move</em></h2>
-      <p class="about-desc">A highly skilled Stock Controller with a proven track record of optimizing inventory processes, enhancing operational efficiency, and reducing overhead costs across the retail sector. Adept in ERP platforms, VBA automation, and data-driven decision making.</p>
-      <div class="about-contacts">
-        <div class="contact-item">
-          <div class="contact-icon">✉</div>
-          <a href="mailto:madronerokurt04@gmail.com">madronerokurt04@gmail.com</a>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">✆</div>
-          <span>+966 569 226 173</span>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">⌖</div>
-          <span>Manila, Philippines</span>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">in</div>
-          <a href="https://www.linkedin.com/in/courtenymadronero" target="_blank">linkedin.com/in/courtenymadronero</a>
-        </div>
-      </div>
-    </div>
-    <div class="about-right">
-      <div class="section-label">Core Expertise</div>
-      <div class="about-tags">
-        <span class="tag">Inventory Management</span>
-        <span class="tag">Data Automation</span>
-        <span class="tag">ERP Systems</span>
-        <span class="tag">SAP</span>
-        <span class="tag">Oracle Publisher</span>
-        <span class="tag">VBA & Macros</span>
-        <span class="tag">Stock Reconciliation</span>
-        <span class="tag">Data Entry</span>
-        <span class="tag">Web Scraping</span>
-        <span class="tag">HTML / CSS / JS</span>
-        <span class="tag">Microsoft Excel</span>
-        <span class="tag">Cycle Audits</span>
-      </div>
-      <div class="lang-box">
-        <div class="lang-title">Languages</div>
-        <div class="lang-item">English — Fluent</div>
-        <div class="lang-item">Arabic — Basic</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- EXPERIENCE CAROUSEL -->
-<section id="experience">
-  <div class="experience-header reveal">
-    <div class="section-label">Work Experience</div>
-    <h2>Where I've Made<br><em>an impact</em></h2>
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#about" onclick="closeMobileMenu()">About</a>
+    <a href="#experience" onclick="closeMobileMenu()">Experience</a>
+    <a href="#tutorials" onclick="closeMobileMenu()">Tutorials</a>
+    <a href="#skills" onclick="closeMobileMenu()">Skills</a>
+    <a href="#education" onclick="closeMobileMenu()">Education</a>
+    <a href="#contact" onclick="closeMobileMenu()">Contact</a>
   </div>
 
-  <div class="carousel-track-wrap">
-    <div class="carousel-track" id="carouselTrack">
+  <!-- NAV -->
+  <nav>
+    <a href="#hero" class="nav-logo">CTM</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#tutorials">Tutorials</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#education">Education</a></li>
+      <li><a href="#contact" class="nav-cta">Contact</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-      <div class="exp-card">
-        <div class="exp-header">
-          <div>
-            <div class="exp-company">United Homeware Company</div>
-            <div class="exp-role">Stock Controller</div>
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-eyebrow">Stock Controller &amp; Data Specialist</div>
+        <h1>Courteny T.<br><em>Madronero</em></h1>
+        <p class="hero-desc">
+          7 years of expertise in inventory management, data automation,
+          and ERP systems. Precision-driven professional transforming
+          supply chain chaos into seamless operations.
+        </p>
+        <div class="hero-actions">
+          <a href="#experience" class="btn-primary">View Experience</a>
+          <a href="#contact" class="btn-outline">Get In Touch</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-photo-frame">
+          <img src="prof.png" width='400' height='500' viewBox='0 0 400 500'%3E%3Crect width='400' height='500' fill='%231e1b18'/%3E%3Ccircle cx='200' cy='180' r='80' fill='%23c9a96e' opacity='0.2'/%3E%3Cpath d='M120 350 Q200 280 280 350 L280 450 L120 450 Z' fill='%23c9a96e' opacity='0.15'/%3E%3Ctext x='200' y='240' text-anchor='middle' font-family='Georgia' font-size='24' fill='%23c9a96e' opacity='0.6'%3ECTM%3C/text%3E%3C/svg%3E"
+               alt="Courteny Madronero" class="hero-real-image" />
+          <div class="hero-photo-overlay"></div>
+          <div class="hero-stats">
+            <div class="hero-stat-num">7+</div>
+            <div class="hero-stat-label">Years Experience</div>
           </div>
-          <div class="exp-period">2019 — Present</div>
         </div>
-        <ul class="exp-items">
-          <li>Maintaining accurate stock records, conducting regular physical counts, and performing stock reconciliations across all product lines.</li>
-          <li>Conducting cycle counts and full inventory audits to verify stock, identify discrepancies, damages, or theft.</li>
-          <li>Keeping detailed records of all inventories including purchases, pricing, and stock movements.</li>
-        </ul>
       </div>
+    </div>
+  </section>
 
-      <div class="exp-card">
-        <div class="exp-header">
-          <div>
-            <div class="exp-company">United Homeware Company</div>
-            <div class="exp-role">Systems & Reporting</div>
+  <div class="divider"></div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-grid reveal">
+      <div class="about-left">
+        <div class="section-label">About</div>
+        <h2>Precision in Every<br><em>inventory move</em></h2>
+        <p class="about-desc">
+          Highly skilled Stock Controller with 7 years in the retail industry, knowledgeable in Inventory Management.
+          Proven track record of optimizing inventory processes, enhancing efficiency, and reducing costs.
+          Expertise in Data Analysis and Automation, exposure to ERP systems, and managing high-value inventories.
+        </p>
+        <div class="about-contacts">
+          <div class="contact-item"><div class="contact-icon">✉</div><a href="mailto:madronerokurt04@gmail.com">madronerokurt04@gmail.com</a></div>
+          <div class="contact-item"><div class="contact-icon">✆</div><span>+966 569 226 173</span></div>
+          <div class="contact-item"><div class="contact-icon">⌖</div><span>Manila, Philippines</span></div>
+          <div class="contact-item"><div class="contact-icon">in</div><a href="https://www.linkedin.com/in/courtenymadronero" target="_blank">linkedin.com/in/courtenymadronero</a></div>
+        </div>
+      </div>
+      <div class="about-right">
+        <div class="section-label">Core Expertise</div>
+        <div class="about-tags">
+          <span class="tag">Inventory Management</span>
+          <span class="tag">Data Automation</span>
+          <span class="tag">ERP Systems</span>
+          <span class="tag">SAP</span>
+          <span class="tag">Oracle Publisher</span>
+          <span class="tag">VBA &amp; Macros</span>
+          <span class="tag">Stock Reconciliation</span>
+          <span class="tag">Data Entry</span>
+          <span class="tag">Web Scraping</span>
+          <span class="tag">HTML / CSS / JS</span>
+          <span class="tag">Microsoft Excel</span>
+          <span class="tag">Cycle Audits</span>
+        </div>
+        <div class="lang-box">
+          <div class="lang-title">Languages</div>
+          <div class="lang-item">English — Fluent</div>
+          <div class="lang-item">Arabic — Basic</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- EXPERIENCE CAROUSEL -->
+  <section id="experience">
+    <div class="experience-header reveal">
+      <div class="section-label">Work Experience</div>
+      <h2>Where I've Made<br><em>an impact</em></h2>
+    </div>
+    <div class="carousel-track-wrap">
+      <div class="carousel-track" id="carouselTrack">
+        <div class="exp-card">
+          <div class="exp-header">
+            <div><div class="exp-company">United Homeware Company</div><div class="exp-role">Stock Controller</div></div>
+            <div class="exp-period">2019 — Present</div>
           </div>
-          <div class="exp-period">2019 — Present</div>
+          <ul class="exp-items">
+            <li>Maintaining accurate stock records, conducting regular physical counts, and performing stock reconciliations.</li>
+            <li>Conducting cycle counts and full inventory audits to verify stock, identify discrepancies, damages, or theft.</li>
+            <li>Keeping detailed records of all inventories including purchases, pricing, and stock movements.</li>
+          </ul>
         </div>
-        <ul class="exp-items">
-          <li>Entering and updating stock information in computer systems and databases with high accuracy.</li>
-          <li>Monitoring incoming and outgoing shipments, resolving delays and logistics issues proactively.</li>
-          <li>Preparing comprehensive inventory reports, forecasting future needs, and analyzing data to improve overall efficiency.</li>
-        </ul>
-      </div>
-
-      <div class="exp-card">
-        <div class="exp-header">
-          <div>
-            <div class="exp-company">United Homeware Company</div>
-            <div class="exp-role">Ordering & Supply</div>
+        <div class="exp-card">
+          <div class="exp-header">
+            <div><div class="exp-company">United Homeware Company</div><div class="exp-role">Systems &amp; Reporting</div></div>
+            <div class="exp-period">2019 — Present</div>
           </div>
-          <div class="exp-period">2019 — Present</div>
+          <ul class="exp-items">
+            <li>Entering and updating stock information in computer systems and databases with high accuracy.</li>
+            <li>Monitoring incoming and outgoing shipments, resolving delays and logistics issues proactively.</li>
+            <li>Preparing comprehensive inventory reports, forecasting future needs, and analyzing data to improve efficiency.</li>
+          </ul>
         </div>
-        <ul class="exp-items">
-          <li>Monitoring stock levels and placing timely orders to ensure consistent product supply.</li>
-          <li>Preventing overstocking or critical shortages through data-driven replenishment strategies.</li>
-          <li>Coordinating with suppliers and internal teams to maintain optimal inventory flow.</li>
-        </ul>
-      </div>
-
-      <div class="exp-card">
-        <div class="exp-header">
-          <div>
-            <div class="exp-company">FlexJobs</div>
-            <div class="exp-role">Remote Freelance Data Entry</div>
+        <div class="exp-card">
+          <div class="exp-header">
+            <div><div class="exp-company">United Homeware Company</div><div class="exp-role">Ordering &amp; Supply</div></div>
+            <div class="exp-period">2019 — Present</div>
           </div>
-          <div class="exp-period">2024 — 2025</div>
+          <ul class="exp-items">
+            <li>Monitoring stock levels and placing timely orders to ensure consistent product supply.</li>
+            <li>Preventing overstocking or critical shortages through data-driven replenishment strategies.</li>
+            <li>Coordinating with suppliers and internal teams to maintain optimal inventory flow.</li>
+          </ul>
         </div>
-        <ul class="exp-items">
-          <li>Transcribed confidential client information from manual documents into digital formats, improving workflow efficiency.</li>
-          <li>Comparing client data to source documents to ensure accuracy and completeness.</li>
-          <li>Managed high-volume corporate email accounts, implementing filing systems that significantly reduced response times.</li>
-        </ul>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="carousel-nav">
-    <button class="carousel-btn" id="prevBtn" onclick="moveCarousel(-1)">&#8592;</button>
-    <button class="carousel-btn" id="nextBtn" onclick="moveCarousel(1)">&#8594;</button>
-    <div class="carousel-dots" id="carouselDots"></div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- SKILLS -->
-<section id="skills">
-  <div class="section-label reveal">Capabilities</div>
-  <h2 class="reveal">Skills &amp; <em>Proficiencies</em></h2>
-  <div class="skills-grid">
-    <div class="skill-card reveal">
-      <div class="skill-icon">📊</div>
-      <div class="skill-name">Microsoft Office Suite</div>
-      <div class="skill-desc">Excel, PowerPoint, Word — Intermediate level with advanced formula usage and reporting.</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="75"></div><span class="skill-level">75%</span></div>
-    </div>
-    <div class="skill-card reveal">
-      <div class="skill-icon">⚙️</div>
-      <div class="skill-name">ERP Systems (SAP / Oracle)</div>
-      <div class="skill-desc">Hands-on experience with Oracle Publisher and SAP for inventory and data management.</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="70"></div><span class="skill-level">70%</span></div>
-    </div>
-    <div class="skill-card reveal">
-      <div class="skill-icon">🤖</div>
-      <div class="skill-name">VBA & Excel Macros</div>
-      <div class="skill-desc">Data automation through VBA scripting and macros to eliminate repetitive workflows.</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="68"></div><span class="skill-level">68%</span></div>
-    </div>
-    <div class="skill-card reveal">
-      <div class="skill-icon">🗄️</div>
-      <div class="skill-name">Inventory Management</div>
-      <div class="skill-desc">7+ years managing high-value inventories with audits, reconciliation, and reporting.</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="92"></div><span class="skill-level">92%</span></div>
-    </div>
-    <div class="skill-card reveal">
-      <div class="skill-icon">🌐</div>
-      <div class="skill-name">Web Scraping & Combining and Extracting Data</div>
-      <div class="skill-desc">Power Query, Power Pivot</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="60"></div><span class="skill-level">60%</span></div>
-    </div>
-    <div class="skill-card reveal">
-      <div class="skill-icon">💻</div>
-      <div class="skill-name">Frontend Web Design</div>
-      <div class="skill-desc">Basic frontend development using HTML, CSS, and JavaScript for portfolio and utility pages.</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="55"></div><span class="skill-level">55%</span></div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- EDUCATION -->
-<section id="education">
-  <div class="edu-inner">
-    <div class="section-label reveal">Education</div>
-    <h2 class="reveal">Academic <em>Background</em></h2>
-    <div class="edu-card reveal">
-      <div class="edu-year">10–12</div>
-      <div>
-        <div class="edu-degree">BS in Information Technology</div>
-        <div class="edu-school">Access Computer College</div>
-        <div class="edu-location">Lagro, Quezon City, Philippines</div>
-        <div class="edu-period">2010 – 2012</div>
+        <div class="exp-card">
+          <div class="exp-header">
+            <div><div class="exp-company">FlexJobs</div><div class="exp-role">Remote Virtual Assistant</div></div>
+            <div class="exp-period">2024 — 2025</div>
+          </div>
+          <ul class="exp-items">
+            <li>Inputting confidential client information from manual documents into spreadsheets and Google Sheets.</li>
+            <li>Comparing client data to source documents to ensure accuracy and completeness.</li>
+            <li>Admin tasks: managing client email, document control &amp; paper works.</li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- CONTACT -->
-<section id="contact">
-  <div class="contact-inner reveal">
-    <div class="section-label" style="justify-content:center;">Let's Connect</div>
-    <div class="cta-big">Ready to work<br><em>together?</em></div>
-    <p class="cta-sub">Whether you're looking for a meticulous Stock Controller or a reliable Data Entry specialist, I bring 7 years of proven results. Let's talk about how I can contribute to your team.</p>
-    <a href="mailto:madronerokurt04@gmail.com" class="btn-primary">Send a Message</a>
-    <div class="cta-links">
-      <a href="tel:+966569226173" class="cta-link-item">✆ +966 569 226 173</a>
-      <a href="https://www.linkedin.com/in/courtenymadronero" target="_blank" class="cta-link-item">in LinkedIn Profile</a>
+    <div class="carousel-nav">
+      <button class="carousel-btn" onclick="moveCarousel(-1)">&#8592;</button>
+      <button class="carousel-btn" onclick="moveCarousel(1)">&#8594;</button>
+      <div class="carousel-dots" id="carouselDots"></div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-name">Courteny T. Madronero</div>
-  <div class="footer-copy">© 2025 — Stock Controller & Data Entry Specialist</div>
-</footer>
+  <div class="divider"></div>
 
-<script>
-// ── ASH PARTICLE SYSTEM ──────────────────────────────────────────
-const canvas = document.getElementById('ash-canvas');
-const ctx = canvas.getContext('2d');
-let W, H;
+  <!-- ===== TUTORIALS (8 videos, embed fixed) ===== -->
+  <section id="tutorials">
+    <div class="tutorials-header reveal">
+      <div class="section-label">Tutorials & Demos</div>
+      <h2>Data &amp; Inventory <em>Showcase</em></h2>
+      <p style="color: var(--muted); font-size:0.9rem; margin-top:0.5rem;">Excel automation, VBA, Power Pivot, and inventory systems</p>
+    </div>
+    <div class="tutorial-slider-wrap">
+      <div class="tutorial-slider" id="tutorialSlider">
 
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
+        <!-- 1. Checkboxes -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/OJ6yc0a_xKU" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">Shipping Tracker with Checkboxes</div>
+            <div class="tutorial-desc">Dynamic tracking using checkboxes in Excel</div>
+          </div>
+        </div>
 
-class Ash {
-  constructor() { this.reset(true); }
-  reset(init = false) {
-    this.x = Math.random() * W;
-    this.y = init ? Math.random() * H : H + 10;
-    this.size = Math.random() * 2.5 + 0.4;
-    this.speedY = -(Math.random() * 0.5 + 0.15);
-    this.speedX = (Math.random() - 0.5) * 0.3;
-    this.drift = (Math.random() - 0.5) * 0.015;
-    this.opacity = Math.random() * 0.45 + 0.05;
-    this.fadeSpeed = Math.random() * 0.002 + 0.0005;
-    this.maxOpacity = this.opacity;
-    this.wobble = Math.random() * Math.PI * 2;
-    this.wobbleSpeed = Math.random() * 0.015 + 0.005;
-    // color: mostly grey-white, occasional ember orange
-    const isEmber = Math.random() < 0.08;
-    if (isEmber) {
-      const r = Math.floor(200 + Math.random() * 55);
-      const g = Math.floor(80 + Math.random() * 60);
-      this.color = `${r},${g},40`;
-    } else {
-      const v = Math.floor(160 + Math.random() * 80);
-      this.color = `${v},${v},${v}`;
+        <!-- 2. Search Box -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/WSsGXJoMOq8" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">Auto Filter with Search Box</div>
+            <div class="tutorial-desc">Filter data dynamically using FILTER function</div>
+          </div>
+        </div>
+
+        <!-- 3. Invoice -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/hVmBdmowE_s" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">Dynamic Invoice with FILTER</div>
+            <div class="tutorial-desc">Auto-generate invoices from large datasets</div>
+          </div>
+        </div>
+
+        <!-- 4. SUMIFS -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/r799_FGhe3w" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">SUMIFS Multiple Criteria</div>
+            <div class="tutorial-desc">Calculate data based on multiple conditions</div>
+          </div>
+        </div>
+
+        <!-- 5. Macro -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/ZYT1mVjmKys" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">Automated Data Entry with MACRO</div>
+            <div class="tutorial-desc">Add entries to your data sheet automatically</div>
+          </div>
+        </div>
+
+        <!-- 6. XLOOKUP & SUMIFS -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/Oi5_Ltt66yw" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">XLOOKUP + SUMIFS Combo</div>
+            <div class="tutorial-desc">Accurate calculations with multiple criteria</div>
+          </div>
+        </div>
+
+        <!-- 7. Inventory Management -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/x1_IC28Bdqo" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">Inventory Management Application</div>
+            <div class="tutorial-desc">User-friendly system for retail & wholesale</div>
+          </div>
+        </div>
+
+        <!-- 8. Power Pivot -->
+        <div class="tutorial-card">
+          <iframe src="https://www.youtube.com/embed/3tS-lB-fSuA" allowfullscreen></iframe>
+          <div class="tutorial-info">
+            <div class="tutorial-title">Power Pivot: Multiple Sheets</div>
+            <div class="tutorial-desc">Summarize sheets into one Pivot Table</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="tutorial-nav">
+      <button class="carousel-btn" onclick="moveTutorial(-1)">&#8592;</button>
+      <button class="carousel-btn" onclick="moveTutorial(1)">&#8594;</button>
+      <div class="tutorial-dots" id="tutorialDots"></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="section-label reveal">Capabilities</div>
+    <h2 class="reveal">Skills &amp; <em>Proficiencies</em></h2>
+    <div class="skills-grid">
+      <div class="skill-card reveal"><div class="skill-icon">📊</div><div class="skill-name">Microsoft Office Suite</div><div class="skill-desc">Excel, PowerPoint, Word — Intermediate level with advanced formula usage and reporting.</div><div class="skill-bar"><div class="skill-fill" data-width="75"></div><span class="skill-level">75%</span></div></div>
+      <div class="skill-card reveal"><div class="skill-icon">⚙️</div><div class="skill-name">ERP Systems (SAP / Oracle)</div><div class="skill-desc">Hands-on experience with Oracle Publisher and SAP for inventory and data management.</div><div class="skill-bar"><div class="skill-fill" data-width="70"></div><span class="skill-level">70%</span></div></div>
+      <div class="skill-card reveal"><div class="skill-icon">🤖</div><div class="skill-name">VBA &amp; Excel Macros</div><div class="skill-desc">Data automation through VBA scripting and macros to eliminate repetitive workflows.</div><div class="skill-bar"><div class="skill-fill" data-width="68"></div><span class="skill-level">68%</span></div></div>
+      <div class="skill-card reveal"><div class="skill-icon">🗄️</div><div class="skill-name">Inventory Management</div><div class="skill-desc">7+ years managing high-value inventories with audits, reconciliation, and reporting.</div><div class="skill-bar"><div class="skill-fill" data-width="92"></div><span class="skill-level">92%</span></div></div>
+      <div class="skill-card reveal"><div class="skill-icon">🌐</div><div class="skill-name">Data Research &amp; Web Scraping</div><div class="skill-desc">Combining and extracting data using Power Query, Power Pivot, and scraping techniques.</div><div class="skill-bar"><div class="skill-fill" data-width="60"></div><span class="skill-level">60%</span></div></div>
+      <div class="skill-card reveal"><div class="skill-icon">💻</div><div class="skill-name">Frontend Web Design</div><div class="skill-desc">Basic frontend development using HTML, CSS, and JavaScript for portfolio and utility pages.</div><div class="skill-bar"><div class="skill-fill" data-width="55"></div><span class="skill-level">55%</span></div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- EDUCATION -->
+  <section id="education">
+    <div class="edu-inner">
+      <div class="section-label reveal">Education</div>
+      <h2 class="reveal">Academic <em>Background</em></h2>
+      <div class="edu-card reveal">
+        <div class="edu-year">10–12</div>
+        <div>
+          <div class="edu-degree">BS in Information Technology</div>
+          <div class="edu-school">Access Computer College</div>
+          <div class="edu-location">Lagro, Quezon City, Philippines</div>
+          <div class="edu-period">2010 – 2012</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-inner reveal">
+      <div class="section-label" style="justify-content:center;">Let's Connect</div>
+      <div class="cta-big">Ready to work<br><em>together?</em></div>
+      <p class="cta-sub">Whether you're looking for a meticulous Stock Controller or a reliable Data Entry specialist, I bring 7 years of proven results. Let's talk about how I can contribute to your team.</p>
+      <a href="mailto:madronerokurt04@gmail.com" class="btn-primary">Send a Message</a>
+      <div class="cta-links">
+        <a href="tel:+966569226173" class="cta-link-item">✆ +966 569 226 173</a>
+        <a href="https://www.linkedin.com/in/courtenymadronero" target="_blank" class="cta-link-item">in LinkedIn Profile</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-name">Courteny T. Madronero</div>
+    <div class="footer-copy">© 2025 — Stock Controller &amp; Data Entry Specialist</div>
+  </footer>
+
+  <script>
+    // ---- ASH PARTICLES (keep ambiance) ----
+    const canvas = document.getElementById('ash-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    class Ash {
+      constructor() { this.reset(true); }
+      reset(init = false) {
+        this.x = Math.random() * W;
+        this.y = init ? Math.random() * H : H + 10;
+        this.size = Math.random() * 2.5 + 0.4;
+        this.speedY = -(Math.random() * 0.5 + 0.15);
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.opacity = Math.random() * 0.45 + 0.05;
+        this.fadeSpeed = Math.random() * 0.002 + 0.0005;
+        this.wobble = Math.random() * Math.PI * 2;
+        this.wobbleSpeed = Math.random() * 0.015 + 0.005;
+        const isEmber = Math.random() < 0.08;
+        if (isEmber) {
+          const r = Math.floor(200 + Math.random() * 55);
+          const g = Math.floor(80 + Math.random() * 60);
+          this.color = `${r},${g},40`;
+        } else {
+          const v = Math.floor(160 + Math.random() * 80);
+          this.color = `${v},${v},${v}`;
+        }
+      }
+      update() {
+        this.wobble += this.wobbleSpeed;
+        this.x += this.speedX + Math.sin(this.wobble) * 0.3;
+        this.y += this.speedY;
+        this.opacity -= this.fadeSpeed;
+        if (this.y < -20 || this.opacity <= 0 || this.x < -20 || this.x > W + 20) this.reset();
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.opacity);
+        ctx.fillStyle = `rgba(${this.color},1)`;
+        ctx.beginPath();
+        const s = this.size;
+        ctx.ellipse(this.x, this.y, s * (0.6 + Math.sin(this.wobble) * 0.2), s * (0.4 + Math.cos(this.wobble * 0.7) * 0.15), this.wobble, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
-  }
-  update() {
-    this.wobble += this.wobbleSpeed;
-    this.x += this.speedX + Math.sin(this.wobble) * 0.3;
-    this.y += this.speedY;
-    this.opacity -= this.fadeSpeed;
-    if (this.y < -20 || this.opacity <= 0 || this.x < -20 || this.x > W + 20) this.reset();
-  }
-  draw() {
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, this.opacity);
-    ctx.fillStyle = `rgba(${this.color},1)`;
-    ctx.beginPath();
-    // irregular ash shape
-    const s = this.size;
-    ctx.ellipse(this.x, this.y, s * (0.6 + Math.sin(this.wobble) * 0.2), s * (0.4 + Math.cos(this.wobble * 0.7) * 0.15), this.wobble, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-}
 
-// Occasional ember streaks
-class Ember {
-  constructor() { this.reset(); }
-  reset() {
-    this.x = Math.random() * W;
-    this.y = H * (0.6 + Math.random() * 0.4);
-    this.vx = (Math.random() - 0.5) * 1.5;
-    this.vy = -(Math.random() * 1.5 + 0.5);
-    this.life = 1;
-    this.decay = Math.random() * 0.012 + 0.006;
-    this.size = Math.random() * 1.5 + 0.5;
-  }
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    this.vy *= 0.98;
-    this.vx *= 0.99;
-    this.life -= this.decay;
-    if (this.life <= 0) this.reset();
-  }
-  draw() {
-    ctx.save();
-    ctx.globalAlpha = this.life * 0.6;
-    ctx.shadowColor = 'rgba(255,120,40,0.8)';
-    ctx.shadowBlur = 4;
-    ctx.fillStyle = `rgba(255,${Math.floor(80 + this.life * 80)},30,1)`;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-}
+    class Ember {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * W;
+        this.y = H * (0.6 + Math.random() * 0.4);
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = -(Math.random() * 1.5 + 0.5);
+        this.life = 1;
+        this.decay = Math.random() * 0.012 + 0.006;
+        this.size = Math.random() * 1.5 + 0.5;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy *= 0.98;
+        this.vx *= 0.99;
+        this.life -= this.decay;
+        if (this.life <= 0) this.reset();
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.life * 0.6;
+        ctx.shadowColor = 'rgba(255,120,40,0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillStyle = `rgba(255,${Math.floor(80 + this.life * 80)},30,1)`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
 
-const ashes = Array.from({length: 120}, () => new Ash());
-const embers = Array.from({length: 18}, () => new Ember());
+    const ashes = Array.from({ length: 120 }, () => new Ash());
+    const embers = Array.from({ length: 18 }, () => new Ember());
 
-// Bottom glow (fire source)
-function drawGlow() {
-  const grad = ctx.createRadialGradient(W/2, H, 0, W/2, H, H * 0.55);
-  grad.addColorStop(0, 'rgba(100,40,10,0.18)');
-  grad.addColorStop(0.4, 'rgba(60,20,5,0.06)');
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
+    function drawGlow() {
+      const grad = ctx.createRadialGradient(W / 2, H, 0, W / 2, H, H * 0.55);
+      grad.addColorStop(0, 'rgba(100,40,10,0.18)');
+      grad.addColorStop(0.4, 'rgba(60,20,5,0.06)');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+      const gl = ctx.createRadialGradient(0, H, 0, 0, H, W * 0.4);
+      gl.addColorStop(0, 'rgba(80,30,5,0.08)');
+      gl.addColorStop(1, 'transparent');
+      ctx.fillStyle = gl;
+      ctx.fillRect(0, 0, W, H);
+      const gr = ctx.createRadialGradient(W, H, 0, W, H, W * 0.4);
+      gr.addColorStop(0, 'rgba(80,30,5,0.08)');
+      gr.addColorStop(1, 'transparent');
+      ctx.fillStyle = gr;
+      ctx.fillRect(0, 0, W, H);
+    }
 
-  // subtle left & right ambient
-  const gl = ctx.createRadialGradient(0, H, 0, 0, H, W * 0.4);
-  gl.addColorStop(0, 'rgba(80,30,5,0.08)');
-  gl.addColorStop(1, 'transparent');
-  ctx.fillStyle = gl;
-  ctx.fillRect(0, 0, W, H);
+    let lastTime = 0;
+    function loop(ts) {
+      if (ts - lastTime < 16) { requestAnimationFrame(loop); return; }
+      lastTime = ts;
+      ctx.clearRect(0, 0, W, H);
+      drawGlow();
+      ashes.forEach(a => { a.update(); a.draw(); });
+      embers.forEach(e => { e.update(); e.draw(); });
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
 
-  const gr = ctx.createRadialGradient(W, H, 0, W, H, W * 0.4);
-  gr.addColorStop(0, 'rgba(80,30,5,0.08)');
-  gr.addColorStop(1, 'transparent');
-  ctx.fillStyle = gr;
-  ctx.fillRect(0, 0, W, H);
-}
+    // ---- SIMPLE CURSOR (follows mouse, hover effect) ----
+    const cursor = document.getElementById('cursor');
+    let mouseX = 0, mouseY = 0;
 
-let lastTime = 0;
-function loop(ts) {
-  if (ts - lastTime < 16) { requestAnimationFrame(loop); return; }
-  lastTime = ts;
-  ctx.clearRect(0, 0, W, H);
-  drawGlow();
-  ashes.forEach(a => { a.update(); a.draw(); });
-  embers.forEach(e => { e.update(); e.draw(); });
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursor.style.left = mouseX + 'px';
+      cursor.style.top = mouseY + 'px';
+    });
 
-// ── CURSOR ───────────────────────────────────────────────────────
-const dot = document.getElementById('cursor-dot');
-const ring = document.getElementById('cursor-ring');
-let mx = 0, my = 0, rx = 0, ry = 0;
-document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-(function moveCursor() {
-  rx += (mx - rx) * 0.12;
-  ry += (my - ry) * 0.12;
-  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
-  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-  requestAnimationFrame(moveCursor);
-})();
-document.querySelectorAll('a, button, .skill-card, .exp-card, .tag').forEach(el => {
-  el.addEventListener('mouseenter', () => { ring.style.width = '56px'; ring.style.height = '56px'; ring.style.borderColor = 'rgba(201,169,110,0.6)'; });
-  el.addEventListener('mouseleave', () => { ring.style.width = '32px'; ring.style.height = '32px'; ring.style.borderColor = 'rgba(201,169,110,0.4)'; });
-});
+    // add hover class to interactive elements
+    const hoverTargets = document.querySelectorAll('a, button, .skill-card, .exp-card, .tag, .btn-primary, .btn-outline, .cta-link-item, .nav-cta, .tutorial-card, .dot, .carousel-btn');
+    hoverTargets.forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
 
-// ── CAROUSEL ─────────────────────────────────────────────────────
-const track = document.getElementById('carouselTrack');
-const cards = track.querySelectorAll('.exp-card');
-const dotsEl = document.getElementById('carouselDots');
-let current = 0;
+    // ---- EXPERIENCE CAROUSEL ----
+    const track = document.getElementById('carouselTrack');
+    const cards = track.querySelectorAll('.exp-card');
+    const dotsEl = document.getElementById('carouselDots');
+    let currentExp = 0;
 
-function buildDots() {
-  cards.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === 0 ? ' active' : '');
-    d.onclick = () => goTo(i);
-    dotsEl.appendChild(d);
-  });
-}
-buildDots();
-
-function goTo(idx) {
-  current = Math.max(0, Math.min(idx, cards.length - 1));
-  const cardW = cards[0].offsetWidth + 24; // gap
-  track.style.transform = `translateX(-${current * cardW}px)`;
-  dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
-}
-
-window.moveCarousel = (dir) => goTo(current + dir);
-
-// Touch swipe
-let touchStartX = 0;
-track.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive:true});
-track.addEventListener('touchend', e => {
-  const diff = touchStartX - e.changedTouches[0].clientX;
-  if (Math.abs(diff) > 50) moveCarousel(diff > 0 ? 1 : -1);
-});
-window.addEventListener('resize', () => goTo(current));
-
-// ── SCROLL REVEAL ────────────────────────────────────────────────
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      // Animate skill bars
-      entry.target.querySelectorAll('.skill-fill').forEach(bar => {
-        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200);
+    function buildDots() {
+      dotsEl.innerHTML = '';
+      cards.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.onclick = () => goToExp(i);
+        dotsEl.appendChild(d);
       });
     }
-  });
-}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    buildDots();
 
-document.querySelectorAll('.reveal').forEach(el => {
-  observer.observe(el);
-  el.querySelectorAll('.skill-fill').forEach(b => b.style.width = '0');
-});
-// Also observe skill cards individually
-document.querySelectorAll('.skill-card').forEach((card, i) => {
-  card.style.transitionDelay = `${i * 0.08}s`;
-  observer.observe(card);
-  card.querySelectorAll('.skill-fill').forEach(b => b.style.width = '0');
-});
+    function goToExp(idx) {
+      currentExp = Math.max(0, Math.min(idx, cards.length - 1));
+      const cardW = cards[0].offsetWidth + 24;
+      track.style.transform = `translateX(-${currentExp * cardW}px)`;
+      dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentExp));
+    }
+    window.moveCarousel = (dir) => goToExp(currentExp + dir);
 
-// ── MOBILE NAV ───────────────────────────────────────────────────
-window.toggleMenu = () => {
-  document.getElementById('mobile-menu').classList.toggle('open');
-};
-window.closeMobileMenu = () => {
-  document.getElementById('mobile-menu').classList.remove('open');
-};
+    let touchStartX = 0;
+    track.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, { passive: true });
+    track.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) moveCarousel(diff > 0 ? 1 : -1);
+    });
+    window.addEventListener('resize', () => goToExp(currentExp));
 
-// ── NAV SCROLL STYLE ─────────────────────────────────────────────
-const navEl = document.querySelector('nav');
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 60) {
-    navEl.style.background = 'rgba(10,10,10,0.96)';
-    navEl.style.backdropFilter = 'blur(10px)';
-  } else {
-    navEl.style.background = 'linear-gradient(to bottom, rgba(10,10,10,0.95), transparent)';
-    navEl.style.backdropFilter = 'blur(2px)';
-  }
-});
-</script>
+    // ---- TUTORIAL CAROUSEL (8 videos) ----
+    const tutorialSlider = document.getElementById('tutorialSlider');
+    const tutorialCards = tutorialSlider.querySelectorAll('.tutorial-card');
+    const tutorialDots = document.getElementById('tutorialDots');
+    let currentTut = 0;
+    let tutPerView = 3;
+
+    function updateTutPerView() {
+      if (window.innerWidth < 900) tutPerView = 1;
+      else if (window.innerWidth < 1200) tutPerView = 2;
+      else tutPerView = 3;
+    }
+    updateTutPerView();
+
+    function buildTutDots() {
+      tutorialDots.innerHTML = '';
+      const total = Math.ceil(tutorialCards.length / tutPerView);
+      for (let i = 0; i < total; i++) {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.onclick = () => goToTut(i);
+        tutorialDots.appendChild(d);
+      }
+    }
+    buildTutDots();
+
+    function goToTut(idx) {
+      const total = Math.ceil(tutorialCards.length / tutPerView);
+      currentTut = Math.max(0, Math.min(idx, total - 1));
+      const cardWidth = tutorialCards[0].offsetWidth + 32;
+      const offset = currentTut * tutPerView * cardWidth;
+      tutorialSlider.style.transform = `translateX(-${offset}px)`;
+      tutorialDots.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentTut));
+    }
+    window.moveTutorial = (dir) => {
+      const total = Math.ceil(tutorialCards.length / tutPerView);
+      goToTut(currentTut + dir);
+    };
+    window.addEventListener('resize', () => {
+      updateTutPerView();
+      buildTutDots();
+      goToTut(currentTut);
+    });
+
+    // ---- SCROLL REVEAL ----
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          entry.target.querySelectorAll('.skill-fill').forEach(bar => {
+            setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200);
+          });
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => {
+      observer.observe(el);
+      el.querySelectorAll('.skill-fill').forEach(b => b.style.width = '0');
+    });
+    document.querySelectorAll('.skill-card').forEach((card, i) => {
+      card.style.transitionDelay = `${i * 0.08}s`;
+      observer.observe(card);
+      card.querySelectorAll('.skill-fill').forEach(b => b.style.width = '0');
+    });
+
+    // ---- MOBILE NAV ----
+    window.toggleMenu = () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    };
+    window.closeMobileMenu = () => {
+      document.getElementById('mobile-menu').classList.remove('open');
+    };
+
+    // ---- NAV SCROLL STYLE ----
+    const navEl = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 60) {
+        navEl.style.background = 'rgba(10,10,10,0.96)';
+        navEl.style.backdropFilter = 'blur(10px)';
+      } else {
+        navEl.style.background = 'linear-gradient(to bottom, rgba(10,10,10,0.95), transparent)';
+        navEl.style.backdropFilter = 'blur(2px)';
+      }
+    });
+  </script>
 </body>
 </html>
