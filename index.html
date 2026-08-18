@@ -526,6 +526,318 @@
   opacity: 0.9;
   mix-blend-mode: screen;
 }
+/* =========================================
+   PROJECTS / WORK SAMPLES
+   ========================================= */
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.4rem;
+}
+
+.project-card {
+  position: relative;
+  padding: 2rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  transition: .3s ease;
+  overflow: hidden;
+}
+
+.project-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--amber);
+  box-shadow: 0 18px 40px -20px rgba(0,0,0,.8);
+}
+
+.project-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(76,141,255,.1);
+  color: var(--cyan);
+  font-size: 1.2rem;
+  margin-bottom: 1.3rem;
+}
+
+.project-type {
+  font-family: var(--mono);
+  font-size: .7rem;
+  text-transform: uppercase;
+  color: var(--amber);
+  letter-spacing: .08em;
+}
+
+.project-card h3 {
+  margin: .5rem 0 .8rem;
+  font-size: 1.35rem;
+}
+
+.project-card p {
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.7;
+  margin-bottom: 1.3rem;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+}
+
+.project-tags span {
+  padding: .35rem .65rem;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  font-family: var(--mono);
+  font-size: .68rem;
+  color: var(--muted);
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  color: var(--text);
+  text-decoration: none;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.project-link:hover {
+  color: var(--amber);
+}
+
+.project-link i {
+  transition: .2s;
+}
+
+.project-link:hover i {
+  transform: translateX(4px);
+}
+
+@media (max-width: 700px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================
+   PROJECT VIDEO MODAL
+   ========================================= */
+
+.project-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.project-modal.active {
+  display: flex;
+}
+
+.project-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .82);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.project-modal-box {
+  position: relative;
+  z-index: 2;
+  width: min(950px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 1.3rem;
+  box-shadow: 0 30px 80px rgba(0,0,0,.7);
+  animation: projectModalIn .25s ease;
+}
+
+@keyframes projectModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.project-modal-header {
+  padding: .4rem .4rem 1rem;
+}
+
+.project-modal-header span {
+  font-family: var(--mono);
+  font-size: .68rem;
+  color: var(--amber);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.project-modal-header h3 {
+  margin-top: .35rem;
+  font-size: 1.4rem;
+}
+
+.project-modal-close {
+  position: absolute;
+  top: .8rem;
+  right: .8rem;
+  z-index: 5;
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 50%;
+  border: 1px solid var(--border);
+
+  background: rgba(10,13,18,.85);
+  color: var(--text);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: .2s;
+}
+
+.project-modal-close:hover {
+  color: var(--amber);
+  border-color: var(--amber);
+  transform: rotate(90deg);
+}
+
+.project-video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #05070a;
+}
+
+.project-video-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* ---- photo gallery mode ---- */
+.project-photo-main {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #05070a;
+}
+
+.project-photo-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity .25s ease;
+}
+
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(10,13,18,.75);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.photo-nav:hover { border-color: var(--amber); color: var(--amber); }
+.photo-nav.prev { left: .8rem; }
+.photo-nav.next { right: .8rem; }
+
+.project-photo-thumbs {
+  display: flex;
+  gap: .6rem;
+  margin-top: .9rem;
+  overflow-x: auto;
+  padding-bottom: .2rem;
+}
+
+.project-photo-thumbs img {
+  width: 74px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  opacity: .55;
+  transition: .2s;
+  flex: none;
+}
+
+.project-photo-thumbs img:hover { opacity: .9; }
+.project-photo-thumbs img.active { opacity: 1; border-color: var(--amber); }
+
+.photo-counter {
+  position: absolute;
+  bottom: .7rem;
+  left: .8rem;
+  z-index: 3;
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--text);
+  background: rgba(10,13,18,.7);
+  padding: .3rem .6rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+
+  .project-modal {
+    padding: .8rem;
+  }
+
+  .project-modal-box {
+    padding: .8rem;
+    border-radius: 16px;
+  }
+
+  .project-modal-header h3 {
+    font-size: 1.1rem;
+    padding-right: 2rem;
+  }
+
+}
 </style>
 </head>
 <body>
@@ -547,6 +859,7 @@
         <li><a href="#about">About</a></li>
         <li><a href="#skills">Skills</a></li>
         <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects">Projects</a></li>
         <li><a href="#videos">Videos</a></li>
       </ul>
       <a href="#contact" class="nav-cta"><i class="fas fa-arrow-right"></i> Contact</a>
@@ -557,6 +870,7 @@
     <a href="#about">About</a>
     <a href="#skills">Skills</a>
     <a href="#experience">Experience</a>
+    <a href="#projects">Projects</a>
     <a href="#videos">Videos</a>
     <a href="#contact">Contact</a>
   </div>
@@ -567,7 +881,7 @@
   <div class="hero-copy reveal-left show">
     <span class="eyebrow">Stock Controller &amp; Virtual Assistant</span>
     <h1>Courteny <span class="hl-amber">Tagadiad</span> Madronero <span class="hl-cyan">CTM</span></h1>
-    <p>I'm Courteny — I’m a detail-oriented Remote Virtual Assistant specializing in data entry with experience supporting medical clients through accurate data entry, email management, document handling, and day-to-day administrative tasks. Also I'm currently working in a Retail Industry as a Stock Controller, managing inventory records, monitoring stock levels, coordinating ERP transactions, and ensuring accurate reconciliation from receiving to reporting. I combine strong attention to detail, organized remote support, and hands-on inventory management to keep operations accurate, efficient, and on track.</p>
+    <p>I'm Courteny — Remote Virtual Assistant and Stock Controller with hands-on experience in data entry, administrative support, inventory management, ERP transactions, and accurate recordkeeping.</p>
     <div class="hero-ctas">
       <a class="btn btn-solid" href="https://wa.me/966569226173" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Let's chat on WhatsApp</a>
       <a class="btn btn-outline" href="#contact"><i class="fas fa-envelope"></i> Send an email</a>
@@ -606,7 +920,7 @@
     <div class="section-head reveal">
       <span class="eyebrow">Skills</span>
       <h1>My <span class="hl-amber">Skills</span> Set <span class="hl-cyan"></span></h1>
-      <p>Ten years split evenly between spreadsheets and shelves — the tools stay the same either way: accuracy, systems, and follow-through.</p>
+      <p>Experienced in both data management and inventory operations, with a strong focus on accuracy, system efficiency, and reliable execution.</p>
     </div>
     <div class="skill-cats">
       <div class="skill-card reveal-scale">
@@ -649,6 +963,155 @@
         <div class="bar"><span style="width:35%"></span></div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============ PROJECTS ============ -->
+<section id="projects" class="section">
+  <div class="section-head reveal">
+    <span class="eyebrow">WORK SAMPLES</span>
+    <h2>Projects &amp; Work Samples</h2>
+    <p>
+      Practical examples of inventory management, data entry, Excel automation,
+      and administrative support.
+    </p>
+  </div>
+
+  <div class="projects-grid">
+
+    <!-- Project 1 -->
+    <article class="project-card reveal">
+
+  <div class="project-icon">
+    <i class="fas fa-boxes-stacked"></i>
+  </div>
+
+  <span class="project-type">Inventory Management</span>
+
+  <h3>Inventory Management System</h3>
+
+  <p>
+    Designed an Excel-based inventory system to organize stock records,
+    monitor stock levels, and simplify inventory tracking.
+  </p>
+
+  <div class="project-tags">
+    <span>Excel</span>
+    <span>Inventory</span>
+    <span>Data Management</span>
+  </div>
+
+  <a href="#"
+     class="project-link"
+     onclick="openProjectVideo(
+       'Inventory Management System',
+       'https://www.youtube.com/embed/x1_IC28Bdqo'
+     ); return false;">
+
+    View Project
+    <i class="fas fa-play"></i>
+
+  </a>
+
+</article>
+
+    <!-- Project 2 -->
+    <article class="project-card reveal">
+      <div class="project-icon">
+        <i class="fas fa-chart-column"></i>
+      </div>
+
+      <span class="project-type">Excel &amp; Reporting</span>
+
+      <h3>Excel Inventory Dashboard</h3>
+
+      <p>
+        Created an interactive dashboard for monitoring inventory levels,
+        stock movement, and key inventory information.
+      </p>
+
+      <div class="project-tags">
+        <span>Excel</span>
+        <span>Dashboard</span>
+        <span>Reporting</span>
+      </div>
+
+      <a href="#" class="project-link"
+         onclick="openProjectVideo(
+           'Excel Inventory Dashboard',
+           '0818.mp4'
+         ); return false;">
+        View Project <i class="fas fa-play"></i>
+      </a>
+    </article>
+
+    <!-- Project 3 -->
+    <article class="project-card reveal">
+      <div class="project-icon">
+        <i class="fas fa-database"></i>
+      </div>
+
+      <span class="project-type">Data Entry</span>
+
+      <h3>Data Entry &amp; Record Management</h3>
+
+      <p>
+        Organized and maintained digital records with a focus on accuracy,
+        consistency, data validation, and efficient recordkeeping.
+      </p>
+
+      <div class="project-tags">
+        <span>Data Entry</span>
+        <span>Excel</span>
+        <span>Accuracy</span>
+      </div>
+
+      <a href="#" class="project-link"
+         onclick="openProjectPhotos(
+           'Data Entry &amp; Record Management',
+           [
+             'login.png',
+             'itemmaster.png',
+             'summary.png',
+           ]
+         ); return false;">
+        View Sample <i class="fas fa-images"></i>
+      </a>
+    </article>
+
+    <!-- Project 4 -->
+    <article class="project-card reveal">
+      <div class="project-icon">
+        <i class="fas fa-file-excel"></i>
+      </div>
+
+      <span class="project-type">Automation</span>
+
+      <h3>Excel Automation</h3>
+
+      <p>
+        Developed spreadsheet solutions using formulas, data organization,
+        automated calculations, and reporting tools to reduce repetitive work.
+      </p>
+
+      <div class="project-tags">
+        <span>Excel</span>
+        <span>Automation</span>
+        <span>Formulas</span>
+      </div>
+
+      <a href="#" class="project-link"
+         onclick="openProjectPhotos(
+           'Excel Automation',
+           [
+             'automation1.png',
+             'automation2.png'
+           ]
+         ); return false;">
+        View Sample <i class="fas fa-images"></i>
+      </a>
+    </article>
+
   </div>
 </section>
 
@@ -749,11 +1212,11 @@
         <p>Based in Manila, Philippines — currently in Saudi Arabia. Happy to work across time zones.</p>
         <a class="contact-line" href="mailto:madronerokurt04@gmail.com"><i class="fas fa-envelope"></i> madronerokurt04@gmail.com</a>
         <a class="contact-line" href="https://wa.me/966569226173" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> +966 569 226 173</a>
-        <a class="contact-line" href="#"><i class="fab fa-linkedin-in"></i> LinkedIn profile</a>
+        <a class="contact-line" href="https://www.linkedin.com/in/courteny-madronero-16556b363/" target="_blank" rel="noopener"><i class="fab fa-linkedin-in"></i> LinkedIn profile</a>
         <div class="social-row">
-          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-          <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
-          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <a href="https://www.linkedin.com/in/courteny-madronero-16556b363/" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://github.com/kurttzy918" target="_blank" rel="noopener"><i class="fab fa-github"></i></a>
+          <a href="https://www.youtube.com/@KurtCreates1994" target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
         </div>
       </div>
 
@@ -796,6 +1259,50 @@
 </footer>
 
 <a class="wa-float" href="https://wa.me/966569226173" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+
+<!-- =========================================
+     PROJECT VIDEO MODAL
+     ========================================= -->
+
+<div class="project-modal" id="projectModal">
+
+  <div class="project-modal-overlay" onclick="closeProjectVideo()"></div>
+
+  <div class="project-modal-box">
+
+    <button class="project-modal-close"
+            onclick="closeProjectVideo()"
+            aria-label="Close video">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <div class="project-modal-header">
+      <span>PROJECT / WORK SAMPLE</span>
+      <h3 id="projectModalTitle">Project Title</h3>
+    </div>
+
+    <div class="project-video-wrapper" id="projectVideoWrapper">
+      <iframe
+        id="projectVideo"
+        src=""
+        title="Project video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <div class="project-photo-wrapper" id="projectPhotoWrapper" style="display:none;">
+      <div class="project-photo-main">
+        <img id="projectPhotoImg" src="" alt="Project screenshot">
+        <span class="photo-counter" id="photoCounter">1 / 1</span>
+        <button class="photo-nav prev" id="photoPrev" aria-label="Previous photo"><i class="fas fa-chevron-left"></i></button>
+        <button class="photo-nav next" id="photoNext" aria-label="Next photo"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <div class="project-photo-thumbs" id="projectPhotoThumbs"></div>
+    </div>
+
+  </div>
+</div>
 
 <script>
 (function(){
@@ -1228,7 +1735,115 @@ function animateAsh() {
 }
 
 animateAsh();
+/* =========================================
+   PROJECT VIDEO MODAL
+   ========================================= */
 
+const projectModal = document.getElementById('projectModal');
+const projectVideo = document.getElementById('projectVideo');
+const projectModalTitle = document.getElementById('projectModalTitle');
+const projectVideoWrapper = document.getElementById('projectVideoWrapper');
+const projectPhotoWrapper = document.getElementById('projectPhotoWrapper');
+const projectPhotoImg = document.getElementById('projectPhotoImg');
+const projectPhotoThumbs = document.getElementById('projectPhotoThumbs');
+const photoCounter = document.getElementById('photoCounter');
+const photoPrevBtn = document.getElementById('photoPrev');
+const photoNextBtn = document.getElementById('photoNext');
+
+let photoList = [];
+let photoIndex = 0;
+
+function openProjectVideo(title, videoUrl) {
+
+  projectModalTitle.textContent = title;
+
+  // switch modal into video mode
+  projectPhotoWrapper.style.display = 'none';
+  projectVideoWrapper.style.display = 'block';
+
+  // Add autoplay when modal opens
+  const separator = videoUrl.includes('?') ? '&' : '?';
+  projectVideo.src = videoUrl + separator + 'autoplay=1&rel=0';
+
+  projectModal.classList.add('active');
+  document.body.classList.add('modal-open');
+}
+
+function openProjectPhotos(title, images) {
+
+  if (!images || !images.length) return;
+
+  projectModalTitle.textContent = title;
+
+  // switch modal into photo-gallery mode
+  projectVideo.src = '';
+  projectVideoWrapper.style.display = 'none';
+  projectPhotoWrapper.style.display = 'block';
+
+  photoList = images;
+  photoIndex = 0;
+
+  const multi = photoList.length > 1;
+  photoPrevBtn.style.display = multi ? 'flex' : 'none';
+  photoNextBtn.style.display = multi ? 'flex' : 'none';
+  projectPhotoThumbs.style.display = multi ? 'flex' : 'none';
+
+  projectPhotoThumbs.innerHTML = photoList
+    .map((src, idx) => `<img src="${src}" data-idx="${idx}" alt="Sample ${idx + 1}">`)
+    .join('');
+  projectPhotoThumbs.querySelectorAll('img').forEach(t => {
+    t.addEventListener('click', () => showPhoto(parseInt(t.dataset.idx, 10)));
+  });
+
+  showPhoto(0);
+
+  projectModal.classList.add('active');
+  document.body.classList.add('modal-open');
+}
+
+function showPhoto(i) {
+  if (!photoList.length) return;
+  photoIndex = (i + photoList.length) % photoList.length;
+
+  projectPhotoImg.style.opacity = '0';
+  setTimeout(() => {
+    projectPhotoImg.src = photoList[photoIndex];
+    projectPhotoImg.style.opacity = '1';
+  }, 120);
+
+  photoCounter.textContent = `${photoIndex + 1} / ${photoList.length}`;
+  projectPhotoThumbs.querySelectorAll('img').forEach((t, idx) => {
+    t.classList.toggle('active', idx === photoIndex);
+  });
+}
+
+photoPrevBtn.addEventListener('click', () => showPhoto(photoIndex - 1));
+photoNextBtn.addEventListener('click', () => showPhoto(photoIndex + 1));
+
+function closeProjectVideo() {
+
+  projectModal.classList.remove('active');
+
+  // Stop video completely when modal closes
+  projectVideo.src = '';
+
+  document.body.classList.remove('modal-open');
+}
+
+/* Close with ESC, navigate photos with arrow keys */
+document.addEventListener('keydown', function(e) {
+  if (!projectModal.classList.contains('active')) return;
+  if (e.key === 'Escape') closeProjectVideo();
+  if (projectPhotoWrapper.style.display !== 'none') {
+    if (e.key === 'ArrowLeft') showPhoto(photoIndex - 1);
+    if (e.key === 'ArrowRight') showPhoto(photoIndex + 1);
+  }
+});
+
+/* expose to inline onclick handlers in the markup */
+window.openProjectVideo = openProjectVideo;
+window.openProjectPhotos = openProjectPhotos;
+window.closeProjectVideo = closeProjectVideo;
 })();
 </script>
 </body>
