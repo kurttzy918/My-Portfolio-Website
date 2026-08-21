@@ -242,12 +242,8 @@
     .comment-date { font-family:var(--mono); font-size:0.68rem; color:var(--muted-dim); }
     .comment-message { color:var(--muted); font-size:0.9rem; line-height:1.6; word-wrap:break-word; margin:0.25rem 0 0.6rem; }
     .comment-actions { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-top:0.3rem; }
-    .comment-actions button { background:none; border:none; color:var(--muted-dim); font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.4rem; border-radius:20px; transition:.2s; font-family:var(--body); }
-    .comment-actions button:hover { color:var(--text); background:rgba(255,255,255,0.05); }
-    .comment-actions .reaction-group { display:flex; gap:0.2rem; }
-    .comment-actions .reaction-group button { font-size:0.85rem; padding:0.1rem 0.3rem; border-radius:16px; background:rgba(255,255,255,0.03); border:1px solid transparent; }
-    .comment-actions .reaction-group button:hover { border-color:var(--border); background:rgba(255,255,255,0.06); }
-    .comment-actions .reaction-group .reaction-count { font-size:0.7rem; color:var(--muted-dim); margin-left:0.1rem; }
+    .comment-actions .reply-toggle { font-size:0.7rem; color:var(--muted-dim); background:none; border:none; cursor:pointer; font-family:var(--body); padding:0.1rem 0.3rem; border-radius:12px; transition:.2s; }
+    .comment-actions .reply-toggle:hover { color:var(--text); background:rgba(255,255,255,0.05); }
     .comment-replies { margin-left:1.6rem; padding-left:0.8rem; border-left:1px solid var(--border); margin-top:0.6rem; }
     .comment-replies .comment-item { padding:0.6rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
     .comment-replies .comment-item:last-child { border-bottom:none; }
@@ -256,8 +252,6 @@
     .reply-form input:focus { border-color:var(--cyan); }
     .reply-form button { background:var(--amber); border:none; border-radius:30px; padding:0.3rem 1rem; color:#1a0f00; font-weight:600; font-size:0.75rem; cursor:pointer; transition:.2s; }
     .reply-form button:hover { transform:scale(1.02); box-shadow:0 4px 12px rgba(255,176,32,0.3); }
-    .reply-toggle { font-size:0.7rem; color:var(--muted-dim); background:none; border:none; cursor:pointer; font-family:var(--body); padding:0.1rem 0.3rem; border-radius:12px; transition:.2s; }
-    .reply-toggle:hover { color:var(--text); background:rgba(255,255,255,0.05); }
     .comments-grid { display:grid; grid-template-columns:1fr 1.5fr; gap:2rem; align-items:start; }
     .comment-list-wrapper { background:var(--panel); border:1px solid var(--border); border-radius:20px; padding:1.8rem; }
     @media (max-width:820px) { .comments-grid { grid-template-columns:1fr; } .comment-list-wrapper { order:-1; } .comment-replies { margin-left:0.8rem; padding-left:0.5rem; } }
@@ -522,7 +516,7 @@
     <div class="section-head reveal">
       <span class="eyebrow"><i class="fas fa-comments"></i> Community</span>
       <h2>Comments &amp; Feedback</h2>
-      <p>Share your thoughts, like, and reply to others. 👋</p>
+      <p>Share your thoughts and reply to others. 👋</p>
     </div>
     <div class="comments-grid">
       <div class="form-card reveal" style="background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 1.8rem;">
@@ -900,20 +894,33 @@
 <script type="module">
   import { initializeApp } from "firebase/app";
   import {
-    getFirestore, collection, addDoc, orderBy, query, limit,
-    doc, getDoc, updateDoc, increment, serverTimestamp,
-    onSnapshot, setDoc, runTransaction
+    getFirestore, 
+    collection, 
+    addDoc, 
+    orderBy, 
+    query, 
+    limit,
+    doc, 
+    getDoc, 
+    updateDoc, 
+    serverTimestamp,
+    onSnapshot, 
+    setDoc, 
+    runTransaction,
+    increment  // ← THIS WAS MISSING!
   } from "firebase/firestore";
 
   // ===== FIREBASE CONFIG =====
   const firebaseConfig = {
-    apiKey: "AIzaSyCPO2-UTGd7zW7oC7Mlc_OVE9gpvjnwu8E",
-    authDomain: "database-ebd7e.firebaseapp.com",
-    projectId: "database-ebd7e",
-    storageBucket: "database-ebd7e.firebasestorage.app",
-    messagingSenderId: "724637840187",
-    appId: "1:724637840187:web:380c85866e1ad8b3197d1e"
-  };
+  apiKey: "AIzaSyCPO2-UTGd7zW7oC7Mlc_OVE9gpvjnwu8E",
+  authDomain: "database-ebd7e.firebaseapp.com",
+  databaseURL: "https://database-ebd7e-default-rtdb.firebaseio.com",
+  projectId: "database-ebd7e",
+  storageBucket: "database-ebd7e.firebasestorage.app",
+  messagingSenderId: "724637840187",
+  appId: "1:724637840187:web:160067b752c43e68197d1e",
+  measurementId: "G-J0WR8ZK7SL"
+};
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -927,7 +934,7 @@
     return div.innerHTML;
   }
 
-  // ===== RENDER COMMENTS =====
+  // ===== RENDER COMMENTS (No likes/reactions) =====
   function renderComments(snapshot) {
     const container = document.getElementById('commentsList');
     if (!container) return;
@@ -941,8 +948,6 @@
     snapshot.forEach(docSnap => {
       const data = docSnap.data();
       const id = docSnap.id;
-      const likes = data.likes || 0;
-      const reactions = data.reactions || {};
       const replies = data.replies || [];
 
       let dateStr = 'Just now';
@@ -979,12 +984,6 @@
         </div>
         <p class="comment-message">${escapeHTML(data.message || '')}</p>
         <div class="comment-actions">
-          <button class="like-btn" data-id="${id}"><i class="fas fa-heart"></i> <span class="like-count">${likes}</span></button>
-          <div class="reaction-group">
-            <button class="reaction-btn" data-id="${id}" data-emoji="👍">👍 <span class="reaction-count">${reactions['👍'] || 0}</span></button>
-            <button class="reaction-btn" data-id="${id}" data-emoji="❤️">❤️ <span class="reaction-count">${reactions['❤️'] || 0}</span></button>
-            <button class="reaction-btn" data-id="${id}" data-emoji="😂">😂 <span class="reaction-count">${reactions['😂'] || 0}</span></button>
-          </div>
           <button class="reply-toggle" data-id="${id}">💬 Reply</button>
         </div>
         <div class="comment-replies" id="replies-${id}">
@@ -1002,14 +1001,6 @@
 
   // ===== ATTACH EVENTS =====
   function attachEvents() {
-    document.querySelectorAll('.like-btn').forEach(btn => {
-      btn.removeEventListener('click', handleLike);
-      btn.addEventListener('click', handleLike);
-    });
-    document.querySelectorAll('.reaction-btn').forEach(btn => {
-      btn.removeEventListener('click', handleReaction);
-      btn.addEventListener('click', handleReaction);
-    });
     document.querySelectorAll('.reply-toggle').forEach(btn => {
       btn.removeEventListener('click', toggleReply);
       btn.addEventListener('click', toggleReply);
@@ -1018,45 +1009,6 @@
       btn.removeEventListener('click', handleReply);
       btn.addEventListener('click', handleReply);
     });
-  }
-
-  // ===== HANDLE LIKE =====
-  async function handleLike(e) {
-    const btn = e.currentTarget;
-    const id = btn.dataset.id;
-    const count = btn.querySelector('.like-count');
-    if (!id) return;
-    try {
-      const ref = doc(db, "comments", id);
-      await runTransaction(db, async (t) => {
-        const snap = await t.get(ref);
-        if (!snap.exists()) return;
-        t.update(ref, { likes: (snap.data().likes || 0) + 1 });
-      });
-      count.textContent = (parseInt(count.textContent) || 0) + 1;
-      console.log('✅ Liked comment:', id);
-    } catch(e) { console.error("Like error:", e); }
-  }
-
-  // ===== HANDLE REACTION =====
-  async function handleReaction(e) {
-    const btn = e.currentTarget;
-    const id = btn.dataset.id;
-    const emoji = btn.dataset.emoji;
-    const count = btn.querySelector('.reaction-count');
-    if (!id || !emoji) return;
-    try {
-      const ref = doc(db, "comments", id);
-      await runTransaction(db, async (t) => {
-        const snap = await t.get(ref);
-        if (!snap.exists()) return;
-        const reactions = snap.data().reactions || {};
-        reactions[emoji] = (reactions[emoji] || 0) + 1;
-        t.update(ref, { reactions });
-      });
-      count.textContent = (parseInt(count.textContent) || 0) + 1;
-      console.log('✅ Reaction added:', emoji, 'to', id);
-    } catch(e) { console.error("Reaction error:", e); }
   }
 
   // ===== TOGGLE REPLY =====
@@ -1071,7 +1023,7 @@
     }
   }
 
-  // ===== HANDLE REPLY (FIXED) =====
+  // ===== HANDLE REPLY =====
   async function handleReply(e) {
     const btn = e.currentTarget;
     const parentId = btn.dataset.parent;
@@ -1085,7 +1037,6 @@
       await runTransaction(db, async (t) => {
         const snap = await t.get(ref);
         if (!snap.exists()) return;
-        // ✅ FIX: If replies doesn't exist, create it as empty array
         const replies = snap.data().replies || [];
         replies.push({ 
           name: 'User', 
@@ -1119,8 +1070,6 @@
         name: name.trim(),
         message: message.trim(),
         createdAt: serverTimestamp(),
-        likes: 0,
-        reactions: {},
         replies: []
       });
       return { success: true };
@@ -1169,27 +1118,49 @@
     });
   }
 
-  // ===== VISITOR COUNT =====
+  // ===== VISITOR COUNT (FIXED) =====
   async function updateVisitorCount() {
     try {
       const ref = doc(db, "stats", "visitors");
+      
+      // Check if the document exists
       const snap = await getDoc(ref);
+      
       if (snap.exists()) {
-        await updateDoc(ref, { count: increment(1) });
-        const updated = await getDoc(ref);
-        document.getElementById('visitorCount').textContent = updated.data().count || 0;
+        // Use increment function properly
+        await updateDoc(ref, {
+          count: increment(1)
+        });
       } else {
-        await setDoc(ref, { count: 1 });
-        document.getElementById('visitorCount').textContent = 1;
+        // Create the document with initial count
+        await setDoc(ref, { 
+          count: 1 
+        });
       }
-    } catch(e) { console.error("Visitor error:", e); }
+      
+      // Get the updated count
+      const updatedSnap = await getDoc(ref);
+      const count = updatedSnap.data()?.count || 0;
+      document.getElementById('visitorCount').textContent = count;
+      console.log('👁️ Visitor count updated to:', count);
+      
+    } catch(e) { 
+      console.error("Visitor count error:", e);
+      // Fallback: show a default count
+      document.getElementById('visitorCount').textContent = '0';
+    }
   }
 
   // ===== INIT =====
-  updateVisitorCount();
+  // Wait for page to load before updating visitor count
+  setTimeout(() => {
+    updateVisitorCount();
+  }, 500);
+  
   setupLiveComments();
   setupCommentForm();
-  console.log('🔥 Comments system ready with likes, reactions & replies!');
+  console.log('🔥 Comments system ready with reply functionality!');
+</script>
 </script>
 </body>
 </html>
