@@ -296,7 +296,7 @@
 <!-- HERO -->
 <header class="hero wrap" id="top">
   <div class="hero-copy reveal-left show">
-    <span class="eyebrow">Stock Controller &amp; Virtual Assistant</span>
+    <span class="eyebrow">Stock Controller &amp; Remote Virtual Assistant</span>
     <h1>Courteny <span class="hl-amber">Tagadiad</span> Madronero <span class="hl-cyan">CTM</span></h1>
     <p>I'm Courteny — Remote Virtual Assistant and Stock Controller with hands-on experience in data entry, administrative support, inventory management, ERP transactions, and accurate recordkeeping.</p>
     <div class="hero-ctas">
@@ -304,9 +304,11 @@
       <a class="btn btn-outline" href="#contact"><i class="fas fa-envelope"></i> Send an email</a>
     </div>
     <div class="hero-stats">
-      <span class="stat-chip"><b>7+ yrs</b> combined experience</span>
-      <span class="stat-chip"><b>SAP &amp; Oracle</b> ERP systems</span>
+      <span class="stat-chip"><b>Inventory</b> Management</span>
+      <span class="stat-chip"><b>Exposure to</b> ERP systems</span>
       <span class="stat-chip"><b>45 WPM</b> typing accuracy</span>
+      <span class="stat-chip"><b>Exposure</b> to data entry and document control</span>
+      <span class="stat-chip"><b>MS Office</b> proficiency</span>
     </div>
   </div>
 </header>
@@ -1160,6 +1162,132 @@
   setupLiveComments();
   setupCommentForm();
   console.log('🔥 Comments system ready with reply functionality!');
+  
+// ==========================================
+// YOUTUBE DYNAMIC UPDATE INTEGRATION
+// ==========================================
+
+const API_KEY = 'AIzaSyArzaM06ujZ8ChjNUdYk4VRI81DhkbBaWM';
+const UPLOADS_PLAYLIST_ID = 'UUYWgTqYpbJkC23Tk-I7YhTA';
+const MAX_RESULTS = 6;
+
+async function fetchLatestVideos() {
+  const url =
+    `https://www.googleapis.com/youtube/v3/playlistItems` +
+    `?part=snippet` +
+    `&playlistId=${UPLOADS_PLAYLIST_ID}` +
+    `&maxResults=${MAX_RESULTS}` +
+    `&key=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('YouTube API error:', errorData);
+      throw new Error(`YouTube API returned ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.items || data.items.length === 0) {
+      console.warn('No YouTube videos found.');
+      return;
+    }
+
+    displayYouTubeVideos(data.items);
+
+  } catch (error) {
+    console.error('Error loading YouTube videos:', error);
+  }
+}
+
+
+function displayYouTubeVideos(videos) {
+  const track = document.getElementById('youtubeTrack');
+  const dots = document.getElementById('youtubeDots');
+
+  if (!track) {
+    console.error('youtubeTrack element not found.');
+    return;
+  }
+
+  track.innerHTML = '';
+
+  videos.forEach(video => {
+
+    const videoId = video.snippet?.resourceId?.videoId;
+
+    if (!videoId) return;
+
+    const title = video.snippet.title;
+    const thumbnail =
+      video.snippet.thumbnails?.high?.url ||
+      video.snippet.thumbnails?.medium?.url ||
+      video.snippet.thumbnails?.default?.url;
+
+    const slide = document.createElement('div');
+    slide.className = 'carousel-slide';
+
+    slide.innerHTML = `
+      <div class="vid-card" data-id="${videoId}">
+
+        <div class="vid-thumb">
+          <img
+            src="${thumbnail}"
+            alt="${escapeHTML(title)}"
+            loading="lazy"
+          />
+
+          <button class="play-btn" type="button">
+            <i class="fas fa-play"></i>
+          </button>
+        </div>
+
+        <div class="body">
+          <div class="title">
+            <i class="fab fa-youtube"
+               style="color:#ff4a4a;margin-right:4px;"></i>
+            ${escapeHTML(title)}
+          </div>
+
+          <div class="channel">
+            Kurt Creates
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    track.appendChild(slide);
+  });
+
+  // Reset carousel position
+  track.dataset.current = 0;
+
+  // Create dots
+  if (dots) {
+    dots.innerHTML = '';
+
+    videos.forEach((_, index) => {
+      const dot = document.createElement('span');
+
+      dot.dataset.index = index;
+
+      dot.addEventListener('click', () => {
+        goTo(index, 'youtubeTrack', 'youtubeDots');
+      });
+
+      dots.appendChild(dot);
+    });
+  }
+
+  updateCarousel('youtubeTrack', 'youtubeDots');
+}
+
+
+// Load latest videos when page starts
+fetchLatestVideos();
 </script>
 </script>
 </body>
