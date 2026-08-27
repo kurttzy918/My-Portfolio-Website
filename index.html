@@ -686,16 +686,22 @@
     goTo((idx - 1 + slides.length) % slides.length, trackId, dotsId);
   }
 
-  const ytIds = ['92GDJhFfhW0','OJ6yc0a_xKU','WSsGXJoMOq8','hVmBdmowE_s','r799_FGhe3w','ZYT1mVjmKys','Oi5_Ltt66yw','x1_IC28Bdqo','3tS-lB-fSuA','_biXf-WQm5Y'];
+  // Reels/Shorts remain manually curated in their own carousel.
   const reelIds = ['0g1xCtgvU8E','hyJHn_iT_Hk','rtF6Juzz1Qg','1OEA4YcqTO4'];
-
-  buildCarousel('youtubeTrack', 'youtubeDots', ytIds);
   buildCarousel('reelsTrack', 'reelsDots', reelIds);
 
   document.querySelector('#youtubeCarousel .prev-slide-btn')?.addEventListener('click', () => prev('youtubeTrack', 'youtubeDots'));
   document.querySelector('#youtubeCarousel .next-slide-btn')?.addEventListener('click', () => next('youtubeTrack', 'youtubeDots'));
   document.querySelector('#reelsCarousel .prev-reel-btn')?.addEventListener('click', () => prev('reelsTrack', 'reelsDots'));
   document.querySelector('#reelsCarousel .next-reel-btn')?.addEventListener('click', () => next('reelsTrack', 'reelsDots'));
+
+  // YouTube carousel: automatic slide every 5 seconds, with pause on hover.
+  let youtubeAuto = setInterval(() => next('youtubeTrack', 'youtubeDots'), 5000);
+  document.getElementById('youtubeCarousel')?.addEventListener('mouseenter', () => clearInterval(youtubeAuto));
+  document.getElementById('youtubeCarousel')?.addEventListener('mouseleave', () => {
+    clearInterval(youtubeAuto);
+    youtubeAuto = setInterval(() => next('youtubeTrack', 'youtubeDots'), 5000);
+  });
 
   let auto = setInterval(() => next('reelsTrack', 'reelsDots'), 4000);
   document.getElementById('reelsCarousel')?.addEventListener('mouseenter', () => clearInterval(auto));
@@ -1168,127 +1174,152 @@
 // ==========================================
 
 const API_KEY = 'AIzaSyArzaM06ujZ8ChjNUdYk4VRI81DhkbBaWM';
+const CHANNEL_ID = 'UCYWgTqYpbJkC23Tk-I7YhTA';
 const UPLOADS_PLAYLIST_ID = 'UUYWgTqYpbJkC23Tk-I7YhTA';
 const MAX_RESULTS = 6;
+const YOUTUBE_REFRESH_INTERVAL = 5 * 60 * 1000; // refresh every 5 minutes
+let youtubeRefreshInProgress = false;
+
+// These are the Shorts/Reels that you have placed in the separate section.
+// They must never appear in the normal YouTube Videos carousel.
+const knownReelIds = new Set([
+  '0g1xCtgvU8E',
+  'hyJHn_iT_Hk',
+  'rtF6Juzz1Qg',
+  '1OEA4YcqTO4'
+]);
 
 async function fetchLatestVideos() {
-  const url =
-    `https://www.googleapis.com/youtube/v3/playlistItems` +
-    `?part=snippet` +
-    `&playlistId=${UPLOADS_PLAYLIST_ID}` +
-    `&maxResults=${MAX_RESULTS}` +
-    `&key=${API_KEY}`;
+  if (youtubeRefreshInProgress) return;
+  youtubeRefreshInProgress = true;
 
   try {
-    const response = await fetch(url);
+    // YouTube's uploads playlist contains both normal videos and Shorts.
+    // Fetch up to 50 so a few Shorts do not hide a newly uploaded normal video.
+    const url =
+      `https://www.googleapis.com/youtube/v3/playlistItems` +
+      `?part=snippet,contentDetails` +
+      `&playlistId=${UPLOADS_PLAYLIST_ID}` +
+      `&maxResults=50` +
+      `&key=${API_KEY}` +
+      `&_=${Date.now()}`;
 
+    const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error('YouTube API error:', errorData);
+      console.error('YouTube uploads API error:', errorData);
       throw new Error(`YouTube API returned ${response.status}`);
     }
 
     const data = await response.json();
+    const ids = (data.items || [])
+      .map(item => item.contentDetails?.videoId || item.snippet?.resourceId?.videoId)
+      .filter(Boolean);
 
-    if (!data.items || data.items.length === 0) {
-      console.warn('No YouTube videos found.');
+    if (!ids.length) {
+      console.warn('YouTube uploads playlist returned no videos.');
       return;
     }
 
-    displayYouTubeVideos(data.items);
+    // Get the video metadata so titles/descriptions can identify explicit Shorts.
+    const detailsUrl =
+      `https://www.googleapis.com/youtube/v3/videos` +
+      `?part=snippet,contentDetails` +
+      `&id=${ids.join(',')}` +
+      `&key=${API_KEY}` +
+      `&_=${Date.now()}`;
 
+    const detailsResponse = await fetch(detailsUrl, { cache: 'no-store' });
+    if (!detailsResponse.ok) {
+      const errorData = await detailsResponse.json().catch(() => null);
+      console.error('YouTube video-details API error:', errorData);
+      throw new Error(`YouTube details API returned ${detailsResponse.status}`);
+    }
+
+    const details = await detailsResponse.json();
+
+    // IMPORTANT: Do NOT use duration as a Shorts test.
+    // A normal YouTube video can be only a few seconds long, and your new
+    // 9-second upload is a good example. YouTube Data API does not provide
+    // a simple isShort boolean. We therefore exclude only explicit #shorts
+    // markers and the Shorts IDs already assigned to your separate section.
+    const regularVideos = (details.items || [])
+      .filter(video => {
+        const videoId = video.id;
+        const title = video.snippet?.title || '';
+        const description = video.snippet?.description || '';
+        const titleLower = title.toLowerCase();
+        const descriptionLower = description.toLowerCase();
+
+        const explicitlyMarkedShort =
+          /(^|\s)#shorts(?:\s|$)/i.test(title) ||
+          /(^|\s)#shorts(?:\s|$)/i.test(description);
+
+        return !knownReelIds.has(videoId) && !explicitlyMarkedShort;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.snippet?.publishedAt || 0).getTime();
+        const dateB = new Date(b.snippet?.publishedAt || 0).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, MAX_RESULTS);
+
+    displayYouTubeVideos(regularVideos);
   } catch (error) {
-    console.error('Error loading YouTube videos:', error);
+    console.error('Error loading latest YouTube videos:', error);
+  } finally {
+    youtubeRefreshInProgress = false;
   }
 }
-
 
 function displayYouTubeVideos(videos) {
   const track = document.getElementById('youtubeTrack');
   const dots = document.getElementById('youtubeDots');
+  if (!track) return;
 
-  if (!track) {
-    console.error('youtubeTrack element not found.');
-    return;
-  }
-
+  const previousId = track.querySelector('.vid-card')?.dataset.id;
   track.innerHTML = '';
 
   videos.forEach(video => {
-
-    const videoId = video.snippet?.resourceId?.videoId;
-
+    const videoId = video.id;
     if (!videoId) return;
-
-    const title = video.snippet.title;
-    const thumbnail =
-      video.snippet.thumbnails?.high?.url ||
-      video.snippet.thumbnails?.medium?.url ||
-      video.snippet.thumbnails?.default?.url;
-
+    const title = video.snippet?.title || 'YouTube Video';
+    const thumbnail = video.snippet?.thumbnails?.high?.url || video.snippet?.thumbnails?.medium?.url || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
     const slide = document.createElement('div');
     slide.className = 'carousel-slide';
-
-    slide.innerHTML = `
-      <div class="vid-card" data-id="${videoId}">
-
-        <div class="vid-thumb">
-          <img
-            src="${thumbnail}"
-            alt="${escapeHTML(title)}"
-            loading="lazy"
-          />
-
-          <button class="play-btn" type="button">
-            <i class="fas fa-play"></i>
-          </button>
-        </div>
-
-        <div class="body">
-          <div class="title">
-            <i class="fab fa-youtube"
-               style="color:#ff4a4a;margin-right:4px;"></i>
-            ${escapeHTML(title)}
-          </div>
-
-          <div class="channel">
-            Kurt Creates
-          </div>
-        </div>
-
-      </div>
-    `;
-
+    slide.innerHTML = `<div class="vid-card" data-id="${videoId}"><div class="vid-thumb"><img src="${thumbnail}" alt="${escapeHTML(title)}" loading="lazy" /><button class="play-btn" type="button"><i class="fas fa-play"></i></button></div><div class="body"><div class="title"><i class="fab fa-youtube" style="color:#ff4a4a;margin-right:4px;"></i>${escapeHTML(title)}</div><div class="channel">Kurt Creates</div></div></div>`;
     track.appendChild(slide);
   });
 
-  // Reset carousel position
-  track.dataset.current = 0;
+  // Keep the newest video at the front, but don't jump unnecessarily when a
+  // background refresh happens and the same video is still visible.
+  let current = 0;
+  if (previousId) {
+    const matchingSlide = [...track.querySelectorAll('.vid-card')].findIndex(card => card.dataset.id === previousId);
+    if (matchingSlide >= 0) current = matchingSlide;
+  }
+  track.dataset.current = String(current);
 
-  // Create dots
   if (dots) {
     dots.innerHTML = '';
-
     videos.forEach((_, index) => {
       const dot = document.createElement('span');
-
       dot.dataset.index = index;
-
-      dot.addEventListener('click', () => {
-        goTo(index, 'youtubeTrack', 'youtubeDots');
-      });
-
+      dot.addEventListener('click', () => goTo(index, 'youtubeTrack', 'youtubeDots'));
       dots.appendChild(dot);
     });
   }
-
   updateCarousel('youtubeTrack', 'youtubeDots');
 }
 
 
-// Load latest videos when page starts
 fetchLatestVideos();
-</script>
+
+// Keep the YouTube Videos section up to date without requiring a page refresh.
+// Each refresh re-queries YouTube and replaces only the regular-video carousel.
+setInterval(() => {
+  fetchLatestVideos();
+}, YOUTUBE_REFRESH_INTERVAL);
 </script>
 </body>
 </html>
