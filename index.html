@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#0b0916" id="themeColorMeta" />
   <title>Courteny T. Madronero · Stock Controller &amp; Virtual Assistant</title>
 
-  <!-- Set theme before paint (no flash) -->
   <script>
     (function () {
       try {
@@ -231,7 +230,7 @@
       align-items: center;
       gap: .7rem;
       padding: .5rem 1.15rem .5rem .5rem;
-      border: 0;                       /* ← borders removed */
+      border: 0;
       border-radius: 60px;
       background: var(--chip-bg);
       white-space: nowrap;
@@ -466,6 +465,107 @@
     .comment-status.error { display:block; background:rgba(255,90,90,0.12); color:#ff9c9c; border:1px solid rgba(255,90,90,0.3); }
     html[data-theme="light"] .comment-status.success { color:#1f8a4c; }
     html[data-theme="light"] .comment-status.error { color:#c23b3b; }
+
+    /* =========================================================
+       ENHANCEMENTS · SCROLL PROGRESS + CURSOR + STAGGERED REVEALS
+       ========================================================= */
+
+    /* --- Scroll progress bar --- */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2) 55%, var(--accent-3));
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), .8);
+      z-index: 300;
+      pointer-events: none;
+      transition: transform .08s linear;
+    }
+
+    /* --- Cursor aura + dot --- */
+    @property --cs {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 1;
+    }
+
+    .cursor-aura,
+    .cursor-dot {
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      opacity: 0;
+      will-change: transform;
+    }
+
+    .cursor-dot {
+      width: 6px; height: 6px;
+      margin: -3px 0 0 -3px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), .95), 0 0 4px rgba(var(--accent-rgb), 1);
+      transform: translate3d(var(--cx, -100px), var(--cy, -100px), 0);
+      transition: opacity .3s ease;
+      z-index: 9999;
+    }
+    .cursor-dot.on { opacity: 1; }
+
+    .cursor-aura {
+      width: 44px; height: 44px;
+      margin: -22px 0 0 -22px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(var(--accent-rgb), .55);
+      background: radial-gradient(circle, rgba(var(--accent-rgb), .16), transparent 68%);
+      --cs: .5;
+      transform: translate3d(var(--cx, -100px), var(--cy, -100px), 0) scale(var(--cs));
+      transition:
+        opacity .4s ease,
+        --cs .45s cubic-bezier(.22,1.4,.36,1),
+        border-color .3s ease,
+        background-color .3s ease;
+      z-index: 9998;
+    }
+    .cursor-aura.on    { opacity: 1; --cs: 1; }
+    .cursor-aura.hover { --cs: 1.9; border-color: rgba(var(--accent-rgb), .95); background: radial-gradient(circle, rgba(var(--accent-rgb), .3), transparent 70%); }
+    .cursor-aura.press { --cs: .68; }
+
+    @media (pointer: coarse) {
+      .cursor-aura, .cursor-dot { display: none !important; }
+    }
+
+    /* --- Deeper reveal (blur + lift) --- */
+    .reveal,
+    .reveal-left,
+    .reveal-right,
+    .reveal-scale {
+      filter: blur(8px);
+      transition:
+        opacity .8s ease,
+        transform .85s cubic-bezier(.22,1,.36,1),
+        filter .8s ease;
+    }
+    .reveal.show,
+    .reveal-left.show,
+    .reveal-right.show,
+    .reveal-scale.show { filter: blur(0); }
+
+    /* --- Parallax background --- */
+    .page-background {
+      transform: scale(1.08) translate3d(0, var(--par, 0px), 0);
+      will-change: transform;
+    }
+
+    /* --- Active nav link --- */
+    .nav-links a.active { color: var(--text); }
+    .nav-links a.active::after { width: 100%; }
+
+    /* --- Respect reduced motion --- */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .reveal-left, .reveal-right, .reveal-scale { filter: none; transition: opacity .3s ease; transform: none !important; }
+      .scroll-progress { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -815,25 +915,44 @@
   }));
 
   /* =========================================================
-     2. REVEAL ON SCROLL
+     2. REVEAL ON SCROLL · STAGGERED + BLUR
      ========================================================= */
-  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
-    new IntersectionObserver((entries) => {
-      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('show'); });
-    }, { threshold: 0.15 }).observe(el);
+  const STAGGER_GROUPS = '.skill-cats, .projects-grid, .timeline, .lang-row, .social-row, .hero-stats';
+
+  document.querySelectorAll(STAGGER_GROUPS).forEach(group => {
+    const kids = group.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+    kids.forEach((el, i) => {
+      const delay = Math.min(i * 90, 540);
+      el.style.transitionDelay = delay + 'ms';
+      el.dataset.revealDelay = String(delay);
+    });
   });
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      el.classList.add('show');
+
+      /* clear the stagger delay after the reveal finishes
+         so hover transitions feel instant again */
+      const d = parseInt(el.dataset.revealDelay || '0', 10);
+      setTimeout(() => { el.style.transitionDelay = '0ms'; }, d + 950);
+
+      revealObserver.unobserve(el);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale')
+    .forEach(el => revealObserver.observe(el));
 
   /* =========================================================
      3. TOOLS MARQUEE (Original Colored Logos)
-     ---------------------------------------------------------
-     ➕ TO ADD A NEW TOOL:  just add another line below.
-        { name: 'Figma', img: 'https://img.icons8.com/color/48/figma.png' }
-        - img = direct URL to the original colored PNG or SVG.
      ========================================================= */
   const TOOLS = [
     { name: 'VS Code',       img: 'https://img.icons8.com/color/48/visual-studio-code-2019.png' },
     { name: 'GitHub',        img: 'github.png' },
-    { name: 'Cursor',        img: 'cursor.jpg' }, /* Fallback for Cursor */
+    { name: 'Cursor',        img: 'cursor.jpg' },
     { name: 'Firebase',      img: 'firebase.png' },
     { name: 'HTML5',         img: 'https://img.icons8.com/color/48/html-5.png' },
     { name: 'CSS3',          img: 'https://img.icons8.com/color/48/css3.png' },
@@ -849,9 +968,6 @@
     { name: 'Git',           img: 'https://img.icons8.com/color/48/git.png' },
     { name: 'Figma',         img: 'https://img.icons8.com/color/48/figma.png' },
     { name: 'Node.js',       img: 'https://img.icons8.com/color/48/nodejs.png' }
-    /* 👇 PLACEHOLDER — add more tools here 👇 */
-    // { name: 'Power BI',   img: 'https://img.icons8.com/color/48/power-bi.png' },
-    // { name: 'Zapier',     img: 'https://img.icons8.com/color/48/zapier.png' },
   ];
 
   (function renderTools() {
@@ -866,9 +982,8 @@
     };
 
     const oneSet = TOOLS.map(chipHTML).join('');
-    track.innerHTML = oneSet + oneSet;   /* duplicated → seamless -50% loop */
+    track.innerHTML = oneSet + oneSet;
 
-    /* graceful fallback if a logo can't load */
     track.querySelectorAll('.tool-logo img').forEach(img => {
       img.addEventListener('error', () => {
         const plate = img.parentElement;
@@ -934,13 +1049,11 @@
 
     const clones = Math.min(3, n);
 
-    /* Append clones of the first `clones` slides */
     for (let i = 0; i < clones; i++) {
       const c = originals[i].cloneNode(true);
       c.classList.add('carousel-clone');
       track.appendChild(c);
     }
-    /* Prepend clones of the last `clones` slides */
     for (let i = n - clones; i < n; i++) {
       const c = originals[i].cloneNode(true);
       c.classList.add('carousel-clone');
@@ -952,7 +1065,6 @@
     track.dataset.cloneCount = String(clones);
     track.style.transition = '';
 
-    /* Build dots (one per real slide) */
     if (dots) {
       dots.innerHTML = Array.from({ length: n }).map((_, i) => `<span data-index="${i}"></span>`).join('');
       dots.querySelectorAll('span').forEach(d => {
@@ -1033,17 +1145,14 @@
     build: buildInfiniteCarousel
   };
 
-  /* Reels / Shorts carousel */
   const reelIds = ['0g1xCtgvU8E','hyJHn_iT_Hk','rtF6Juzz1Qg','1OEA4YcqTO4'];
   buildInfiniteCarousel('reelsTrack', 'reelsDots', reelIds);
 
-  /* Nav buttons */
   document.querySelector('.prev-slide-btn')?.addEventListener('click', () => prevInfinite('youtubeTrack', 'youtubeDots'));
   document.querySelector('.next-slide-btn')?.addEventListener('click', () => nextInfinite('youtubeTrack', 'youtubeDots'));
   document.querySelector('.prev-reel-btn')?.addEventListener('click', () => prevInfinite('reelsTrack', 'reelsDots'));
   document.querySelector('.next-reel-btn')?.addEventListener('click', () => nextInfinite('reelsTrack', 'reelsDots'));
 
-  /* Auto-advance with pause on hover */
   let youtubeAuto = setInterval(() => nextInfinite('youtubeTrack', 'youtubeDots'), 5000);
   document.getElementById('youtubeCarousel')?.addEventListener('mouseenter', () => clearInterval(youtubeAuto));
   document.getElementById('youtubeCarousel')?.addEventListener('mouseleave', () => {
@@ -1058,7 +1167,6 @@
     reelAuto = setInterval(() => nextInfinite('reelsTrack', 'reelsDots'), 4000);
   });
 
-  /* Inline playback when a thumbnail is clicked */
   document.addEventListener('click', e => {
     const card = e.target.closest('.vid-card');
     if (!card || card.querySelector('iframe')) return;
@@ -1088,19 +1196,36 @@
   });
 
   /* =========================================================
-     7. FLOATING PARTICLES (theme-aware)
+     7. FLOATING PARTICLES · CURSOR-REACTIVE
+     ---------------------------------------------------------
+     The ashes are now physics-driven. They get pulled toward
+     the cursor, orbit around it, and get dragged by fast
+     cursor movement. Moving the pointer makes them follow.
      ========================================================= */
   const canvas = document.getElementById('fireAshes');
   const ctx = canvas.getContext('2d');
   let isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
   let ashes = [];
+  let VW = window.innerWidth;
+  let VH = window.innerHeight;
+
+  const pointer = {
+    x: -9999, y: -9999,
+    px: -9999, py: -9999,
+    vx: 0, vy: 0,
+    active: false,
+    radius: 210
+  };
 
   function resizeCanvas() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
+    VW = window.innerWidth;
+    VH = window.innerHeight;
+    canvas.width = VW * dpr;
+    canvas.height = VH * dpr;
+    canvas.style.width = VW + 'px';
+    canvas.style.height = VH + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   resizeCanvas();
@@ -1108,11 +1233,13 @@
 
   function createAsh(init = false) {
     return {
-      x: Math.random() * window.innerWidth,
-      y: init ? Math.random() * window.innerHeight : window.innerHeight + 20,
+      x: Math.random() * VW,
+      y: init ? Math.random() * VH : VH + 20,
+      vx: 0,
+      vy: init ? (Math.random() - 0.5) * 0.2 : -Math.random() * 0.25 - 0.05,
       w: Math.random() * 1.1 + 0.3,
       h: Math.random() * 3.2 + 0.9,
-      speed: Math.random() * 0.5 + 0.14,
+      rise: Math.random() * 0.42 + 0.12,
       drift: Math.random() * 0.35 - 0.175,
       sway: Math.random() * Math.PI * 2,
       swaySpeed: Math.random() * 0.018 + 0.004,
@@ -1121,19 +1248,81 @@
       isEmber: Math.random() < 0.18,
       opacity: Math.random() * 0.28 + 0.14,
       life: Math.random() * 500 + 300,
-      age: init ? Math.random() * 500 : 0
+      age: init ? Math.random() * 500 : 0,
+      heat: 0
     };
   }
-  for (let i = 0; i < 90; i++) ashes.push(createAsh(true));
+
+  for (let i = 0; i < 95; i++) ashes.push(createAsh(true));
+
+  /* --- Cursor → particle interaction --- */
+  function updateAsh(a, i) {
+    a.age++;
+    a.sway += a.swaySpeed;
+
+    if (pointer.active) {
+      const dx = pointer.x - a.x;
+      const dy = pointer.y - a.y;
+      const d2 = dx * dx + dy * dy;
+      const R = pointer.radius;
+
+      if (d2 < R * R && d2 > 0.01) {
+        const d = Math.sqrt(d2);
+        const t = 1 - d / R;          // 0 at edge → 1 at centre
+        const pull = t * t;           // ease-in falloff
+        const nx = dx / d;
+        const ny = dy / d;
+
+        /* attraction toward the cursor */
+        a.vx += nx * pull * 0.20;
+        a.vy += ny * pull * 0.20;
+
+        /* tangential swirl — makes them orbit the cursor */
+        a.vx += -ny * pull * 0.55;
+        a.vy +=  nx * pull * 0.55;
+
+        /* get dragged along when the cursor moves fast */
+        a.vx += pointer.vx * 0.022 * pull;
+        a.vy += pointer.vy * 0.022 * pull;
+
+        a.rotSpeed += (Math.random() - 0.5) * 0.012 * pull;
+        a.heat = Math.min(1, a.heat + 0.04 + pull * 0.10);
+      }
+    }
+
+    a.heat *= 0.94;
+    a.vx *= 0.92;
+    a.vy *= 0.92;
+    a.rotSpeed = Math.max(-0.22, Math.min(0.22, a.rotSpeed));
+
+    /* velocity clamp so nothing gets flung off-screen */
+    const sp = Math.hypot(a.vx, a.vy);
+    if (sp > 5.5) {
+      a.vx = (a.vx / sp) * 5.5;
+      a.vy = (a.vy / sp) * 5.5;
+    }
+
+    a.x += a.vx + a.drift + Math.sin(a.sway) * 0.25;
+    a.y += a.vy - a.rise;
+    a.rot += a.rotSpeed;
+
+    a.drift = Math.max(-0.35, Math.min(0.35, a.drift + (Math.random() - 0.5) * 0.004));
+
+    if (a.y < -40 || a.age > a.life || a.x < -80 || a.x > VW + 80) {
+      ashes[i] = createAsh(false);
+    }
+  }
 
   function drawAsh(a) {
-    const alpha = a.opacity * (0.75 + Math.sin(a.age * 0.035) * 0.15);
+    const heat = a.heat;
+    const alpha = Math.min(1, a.opacity * (0.75 + Math.sin(a.age * 0.035) * 0.15) * (1 + heat * 1.8));
+
     ctx.save();
     ctx.translate(a.x, a.y);
     ctx.rotate(a.rot);
 
     if (a.isEmber) {
-      const r = a.h * 2.6;
+      const r = a.h * (2.6 + heat * 2.4);
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
       if (isLight) {
         g.addColorStop(0,   `rgba(131,107,214,${alpha})`);
@@ -1153,7 +1342,7 @@
         ? `rgba(131,107,214,${Math.min(alpha * 1.8, 1)})`
         : `rgba(240,232,255,${Math.min(alpha * 1.6, 1)})`;
       ctx.beginPath();
-      ctx.arc(0, 0, a.h * 0.5, 0, Math.PI * 2);
+      ctx.arc(0, 0, a.h * (0.5 + heat * 0.5), 0, Math.PI * 2);
       ctx.fill();
     } else {
       ctx.beginPath();
@@ -1167,24 +1356,78 @@
         : `rgba(205,198,225,${alpha})`;
       ctx.fill();
     }
+
     ctx.restore();
   }
 
+  /* --- click burst: a puff of embers --- */
+  function burst(x, y) {
+    if (ashes.length > 210) return;
+    for (let i = 0; i < 12; i++) {
+      const a = createAsh(false);
+      a.x = x;
+      a.y = y;
+      const ang = Math.random() * Math.PI * 2;
+      const spd = Math.random() * 2.8 + 0.6;
+      a.vx = Math.cos(ang) * spd;
+      a.vy = Math.sin(ang) * spd;
+      a.heat = 1;
+      a.isEmber = Math.random() < 0.45;
+      a.opacity = Math.random() * 0.35 + 0.25;
+      a.life = Math.random() * 120 + 70;
+      a.age = 0;
+      ashes.push(a);
+    }
+    if (ashes.length > 230) ashes.splice(0, ashes.length - 230);
+  }
+
   function animateAsh() {
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    ashes.forEach((a, i) => {
-      a.age++;
-      a.sway += a.swaySpeed;
-      a.x += a.drift + Math.sin(a.sway) * 0.25;
-      a.y -= a.speed;
-      a.rot += a.rotSpeed;
-      a.drift = Math.max(-0.35, Math.min(0.35, a.drift + (Math.random() - 0.5) * 0.004));
-      if (a.y < -30 || a.age > a.life) ashes[i] = createAsh(false);
-      drawAsh(a);
-    });
+    /* motion-trail clear (instead of a hard clearRect) */
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.fillRect(0, 0, VW, VH);
+    ctx.globalCompositeOperation = 'source-over';
+
+    pointer.vx *= 0.88;
+    pointer.vy *= 0.88;
+
+    /* soft glow that hugs the cursor */
+    if (pointer.active) {
+      const c = isLight ? '131,107,214' : '199,178,255';
+      const g = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 170);
+      g.addColorStop(0, `rgba(${c},0.10)`);
+      g.addColorStop(1, `rgba(${c},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(pointer.x, pointer.y, 170, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    for (let i = 0; i < ashes.length; i++) {
+      updateAsh(ashes[i], i);
+      drawAsh(ashes[i]);
+    }
+
+    updateCursorAura();
     requestAnimationFrame(animateAsh);
   }
-  animateAsh();
+
+  /* --- pointer listeners --- */
+  window.addEventListener('pointermove', (e) => {
+    pointer.px = pointer.x;
+    pointer.py = pointer.y;
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    if (pointer.px > -9000) {
+      pointer.vx = pointer.x - pointer.px;
+      pointer.vy = pointer.y - pointer.py;
+    }
+    pointer.active = true;
+  }, { passive: true });
+
+  window.addEventListener('pointerdown', (e) => { burst(e.clientX, e.clientY); }, { passive: true });
+  window.addEventListener('blur', () => { pointer.active = false; });
+  document.addEventListener('mouseleave', () => { pointer.active = false; });
 
   /* =========================================================
      8. PROJECT MODAL
@@ -1282,6 +1525,101 @@
   });
 
   setTheme(root.getAttribute('data-theme') || 'dark', false);
+
+  /* =========================================================
+     10. CURSOR AURA + DOT  (desktop only)
+     ========================================================= */
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+
+  const auraEl = document.createElement('div');
+  auraEl.className = 'cursor-aura';
+  const dotEl = document.createElement('div');
+  dotEl.className = 'cursor-dot';
+  document.body.append(auraEl, dotEl);
+
+  let auraX = window.innerWidth / 2;
+  let auraY = window.innerHeight / 2;
+  let cursorVisible = false;
+
+  document.addEventListener('pointerover', (e) => {
+    const interactive = e.target.closest(
+      'a, button, input, textarea, select, label, .tool-chip, .vid-card, .project-card, .skill-card, .carousel-dots span'
+    );
+    auraEl.classList.toggle('hover', !!interactive);
+  });
+
+  window.addEventListener('pointerdown', () => auraEl.classList.add('press'));
+  window.addEventListener('pointerup', () => auraEl.classList.remove('press'));
+
+  function updateCursorAura() {
+    if (!finePointer || !pointer.active) return;
+
+    /* lerp = the aura trails behind the dot */
+    auraX += (pointer.x - auraX) * 0.14;
+    auraY += (pointer.y - auraY) * 0.14;
+
+    if (!cursorVisible) {
+      auraEl.classList.add('on');
+      dotEl.classList.add('on');
+      cursorVisible = true;
+    }
+
+    dotEl.style.setProperty('--cx', pointer.x + 'px');
+    dotEl.style.setProperty('--cy', pointer.y + 'px');
+    auraEl.style.setProperty('--cx', auraX.toFixed(2) + 'px');
+    auraEl.style.setProperty('--cy', auraY.toFixed(2) + 'px');
+  }
+
+  /* =========================================================
+     11. SCROLL ENHANCEMENTS
+         · progress bar  · background parallax  · active nav
+     ========================================================= */
+  const progressBar = document.createElement('div');
+  progressBar.className = 'scroll-progress';
+  document.body.appendChild(progressBar);
+
+  const bgImage = document.querySelector('.page-background');
+  const navAnchors = Array.from(document.querySelectorAll('.nav-links a'));
+  const navSections = navAnchors
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  let scrollTicking = false;
+
+  function onScrollFrame() {
+    scrollTicking = false;
+    const y = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, y / max) : 0;
+
+    progressBar.style.transform = `scaleX(${p})`;
+
+    if (bgImage) {
+      const shift = Math.min(y * 0.07, 34);
+      bgImage.style.setProperty('--par', shift.toFixed(2) + 'px');
+    }
+
+    const fromTop = y + window.innerHeight * 0.35;
+    let current = null;
+    navSections.forEach(sec => { if (sec.offsetTop <= fromTop) current = sec; });
+    navAnchors.forEach(a => {
+      a.classList.toggle('active', !!current && a.getAttribute('href') === '#' + current.id);
+    });
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+      scrollTicking = true;
+      requestAnimationFrame(onScrollFrame);
+    }
+  }, { passive: true });
+
+  onScrollFrame();
+
+  /* =========================================================
+     START THE PARTICLE LOOP
+     ========================================================= */
+  animateAsh();
 })();
 </script>
 
@@ -1628,7 +1966,6 @@
     const track = document.getElementById('youtubeTrack');
     if (!track) return;
 
-    /* Reset completely before rebuilding (removes old clones too) */
     track.style.transition = 'none';
     track.innerHTML = '';
     delete track.dataset.current;
@@ -1648,7 +1985,6 @@
       track.appendChild(slide);
     });
 
-    /* Make it infinite (adds clones + dots + starting position) */
     window.__carousel?.makeInfinite('youtubeTrack', 'youtubeDots');
   }
 
