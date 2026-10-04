@@ -948,6 +948,751 @@ img,video,iframe,canvas,svg{max-width:100%}
 .scrollnav button:hover{background:var(--accent);color:#03130a;box-shadow:0 0 20px -2px rgba(var(--accent-rgb),.6)}
 .scrollnav button.gone{opacity:0;pointer-events:none;transform:scale(.7)}
 @media(max-width:820px){.scrollnav{right:1.2rem;bottom:4.9rem}.scrollnav button{width:40px;height:40px}}
+/* =========================================================
+   3D ISOMETRIC STACKED CAROUSEL — YouTube Section
+   ========================================================= */
+.yt3d-wrap {
+  position: relative;
+  perspective: 1800px;
+  perspective-origin: 50% 45%;
+  overflow: hidden;
+  padding: 2rem 0 1rem;
+  margin-top: 1rem;
+  min-height: 460px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+}
+
+.yt3d-stage {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  transform-style: preserve-3d;
+}
+
+.yt3d-slide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 460px;
+  height: 290px;
+  margin-left: -230px;
+  margin-top: -145px;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.7s ease,
+    filter 0.7s ease;
+  will-change: transform, opacity, filter;
+  cursor: pointer;
+}
+
+.yt3d-card {
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,.85);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.yt3d-slide[data-pos="0"] .yt3d-card {
+  border-color: rgba(var(--accent-rgb), 0.65);
+  box-shadow:
+    0 30px 60px -20px rgba(0,0,0,.9),
+    0 0 0 1px rgba(var(--accent-rgb), 0.4),
+    0 0 60px -10px rgba(var(--accent-rgb), 0.5);
+}
+
+.yt3d-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #05080a;
+}
+
+.yt3d-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s ease;
+}
+
+.yt3d-slide[data-pos="0"]:hover .yt3d-thumb img { transform: scale(1.06); }
+
+.yt3d-thumb iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.yt3d-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(10,15,13,0.72);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.yt3d-slide[data-pos="0"]:hover .yt3d-play {
+  background: var(--accent);
+  color: #04120b;
+  border-color: var(--accent);
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: 0 0 30px -4px rgba(var(--accent-rgb), 0.9);
+}
+
+.yt3d-overlay {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 2.5rem 1.4rem 1.1rem;
+  background: linear-gradient(0deg, rgba(5,10,8,0.96) 0%, rgba(5,10,8,0.75) 40%, transparent 100%);
+  pointer-events: none;
+}
+
+.yt3d-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.25rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.yt3d-channel {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.68);
+  letter-spacing: 0.04em;
+}
+.yt3d-channel i { color: #ff4a4a; margin-right: 0.35rem; }
+
+/* --- Position states --- */
+.yt3d-slide[data-pos="0"] {
+  transform: translateX(0) translateZ(120px) rotateY(0deg) rotateZ(-1.5deg) scale(1);
+  opacity: 1;
+  z-index: 10;
+}
+
+.yt3d-slide[data-pos="1"] {
+  transform: translateX(48%) translateZ(-60px) rotateY(-32deg) rotateZ(-1.5deg) scale(0.85);
+  opacity: 0.92;
+  z-index: 8;
+  filter: brightness(0.55) saturate(0.7);
+}
+
+.yt3d-slide[data-pos="-1"] {
+  transform: translateX(-48%) translateZ(-60px) rotateY(32deg) rotateZ(1.5deg) scale(0.85);
+  opacity: 0.92;
+  z-index: 8;
+  filter: brightness(0.55) saturate(0.7);
+}
+
+.yt3d-slide[data-pos="2"] {
+  transform: translateX(85%) translateZ(-200px) rotateY(-40deg) rotateZ(-1.5deg) scale(0.68);
+  opacity: 0.6;
+  z-index: 6;
+  filter: brightness(0.32) saturate(0.5);
+}
+
+.yt3d-slide[data-pos="-2"] {
+  transform: translateX(-85%) translateZ(-200px) rotateY(40deg) rotateZ(1.5deg) scale(0.68);
+  opacity: 0.6;
+  z-index: 6;
+  filter: brightness(0.32) saturate(0.5);
+}
+
+.yt3d-slide[data-pos="hide"] {
+  transform: translateX(0) translateZ(-500px) rotateY(0deg) scale(0.5);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- Controls --- */
+.yt3d-controls {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.6rem;
+}
+
+.yt3d-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.yt3d-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+  transform: scale(1.08);
+  box-shadow: 0 0 20px -2px rgba(var(--accent-rgb), 0.6);
+}
+
+.yt3d-dots {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 320px;
+}
+
+.yt3d-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 40px;
+  background: rgba(var(--accent-rgb), 0.24);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.yt3d-dots span.active {
+  background: var(--accent);
+  width: 24px;
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.8);
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  .yt3d-wrap { min-height: 380px; }
+  .yt3d-stage { height: 320px; }
+  .yt3d-slide { width: 380px; height: 240px; margin-left: -190px; margin-top: -120px; }
+}
+
+@media (max-width: 640px) {
+  .yt3d-wrap { min-height: 300px; padding: 1.5rem 0 0.5rem; }
+  .yt3d-stage { height: 240px; }
+  .yt3d-slide { width: 300px; height: 190px; margin-left: -150px; margin-top: -95px; }
+  .yt3d-slide[data-pos="1"]  { transform: translateX(38%) translateZ(-60px) rotateY(-30deg) rotateZ(-1.5deg) scale(0.85); }
+  .yt3d-slide[data-pos="-1"] { transform: translateX(-38%) translateZ(-60px) rotateY(30deg) rotateZ(1.5deg) scale(0.85); }
+  .yt3d-slide[data-pos="2"]  { transform: translateX(65%) translateZ(-200px) rotateY(-38deg) rotateZ(-1.5deg) scale(0.68); }
+  .yt3d-slide[data-pos="-2"] { transform: translateX(-65%) translateZ(-200px) rotateY(38deg) rotateZ(1.5deg) scale(0.68); }
+  .yt3d-play { width: 52px; height: 52px; font-size: 1rem; }
+  .yt3d-title { font-size: 0.82rem; }
+  .yt3d-overlay { padding: 2rem 1rem 0.85rem; }
+  .yt3d-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+}
+/* =========================================================
+   3D ISOMETRIC STACKED CAROUSEL — Reels · Shorts (portrait)
+   ========================================================= */
+.rl3d-wrap {
+  position: relative;
+  perspective: 1800px;
+  perspective-origin: 50% 45%;
+  overflow: hidden;
+  padding: 2rem 0 1rem;
+  margin-top: 1rem;
+  min-height: 560px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
+}
+
+.rl3d-stage {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  transform-style: preserve-3d;
+}
+
+.rl3d-slide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 280px;
+  height: 480px;              /* 9:16 portrait */
+  margin-left: -140px;
+  margin-top: -240px;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.7s ease,
+    filter 0.7s ease;
+  will-change: transform, opacity, filter;
+  cursor: pointer;
+}
+
+.rl3d-card {
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,.85);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.rl3d-slide[data-pos="0"] .rl3d-card {
+  border-color: rgba(var(--accent-rgb), 0.65);
+  box-shadow:
+    0 30px 60px -20px rgba(0,0,0,.9),
+    0 0 0 1px rgba(var(--accent-rgb), 0.4),
+    0 0 60px -10px rgba(var(--accent-rgb), 0.5);
+}
+
+.rl3d-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #05080a;
+}
+
+.rl3d-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s ease;
+}
+
+.rl3d-slide[data-pos="0"]:hover .rl3d-thumb img { transform: scale(1.05); }
+
+.rl3d-thumb iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.rl3d-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(10,15,13,0.72);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.rl3d-slide[data-pos="0"]:hover .rl3d-play {
+  background: var(--accent);
+  color: #04120b;
+  border-color: var(--accent);
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: 0 0 30px -4px rgba(var(--accent-rgb), 0.9);
+}
+
+.rl3d-overlay {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 3rem 1rem 1rem;
+  background: linear-gradient(0deg, rgba(5,10,8,0.97) 0%, rgba(5,10,8,0.7) 40%, transparent 100%);
+  pointer-events: none;
+}
+
+.rl3d-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(var(--accent-rgb), 0.18);
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  margin-bottom: 0.5rem;
+}
+
+.rl3d-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.rl3d-channel {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.68);
+  letter-spacing: 0.04em;
+}
+.rl3d-channel i { color: #ff4a4a; margin-right: 0.35rem; }
+
+/* --- Position states --- */
+.rl3d-slide[data-pos="0"] {
+  transform: translateX(0) translateZ(120px) rotateY(0deg) rotateZ(-1.5deg) scale(1);
+  opacity: 1;
+  z-index: 10;
+}
+
+.rl3d-slide[data-pos="1"] {
+  transform: translateX(58%) translateZ(-80px) rotateY(-30deg) rotateZ(-2deg) scale(0.86);
+  opacity: 0.92;
+  z-index: 8;
+  filter: brightness(0.5) saturate(0.7);
+}
+
+.rl3d-slide[data-pos="-1"] {
+  transform: translateX(-58%) translateZ(-80px) rotateY(30deg) rotateZ(2deg) scale(0.86);
+  opacity: 0.92;
+  z-index: 8;
+  filter: brightness(0.5) saturate(0.7);
+}
+
+.rl3d-slide[data-pos="2"] {
+  transform: translateX(105%) translateZ(-220px) rotateY(-38deg) rotateZ(-2deg) scale(0.7);
+  opacity: 0.55;
+  z-index: 6;
+  filter: brightness(0.3) saturate(0.5);
+}
+
+.rl3d-slide[data-pos="-2"] {
+  transform: translateX(-105%) translateZ(-220px) rotateY(38deg) rotateZ(2deg) scale(0.7);
+  opacity: 0.55;
+  z-index: 6;
+  filter: brightness(0.3) saturate(0.5);
+}
+
+.rl3d-slide[data-pos="hide"] {
+  transform: translateX(0) translateZ(-500px) rotateY(0deg) scale(0.5);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- Controls --- */
+.rl3d-controls {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.rl3d-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.rl3d-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+  transform: scale(1.08);
+  box-shadow: 0 0 20px -2px rgba(var(--accent-rgb), 0.6);
+}
+
+.rl3d-dots {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 320px;
+}
+
+.rl3d-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 40px;
+  background: rgba(var(--accent-rgb), 0.24);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.rl3d-dots span.active {
+  background: var(--accent);
+  width: 24px;
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.8);
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  .rl3d-wrap { min-height: 480px; }
+  .rl3d-stage { height: 420px; }
+  .rl3d-slide { width: 240px; height: 410px; margin-left: -120px; margin-top: -205px; }
+}
+
+@media (max-width: 640px) {
+  .rl3d-wrap { min-height: 400px; padding: 1.5rem 0 0.5rem; }
+  .rl3d-stage { height: 350px; }
+  .rl3d-slide { width: 200px; height: 340px; margin-left: -100px; margin-top: -170px; }
+  .rl3d-slide[data-pos="1"]  { transform: translateX(48%) translateZ(-80px) rotateY(-28deg) rotateZ(-2deg) scale(0.86); }
+  .rl3d-slide[data-pos="-1"] { transform: translateX(-48%) translateZ(-80px) rotateY(28deg) rotateZ(2deg) scale(0.86); }
+  .rl3d-slide[data-pos="2"]  { transform: translateX(85%) translateZ(-220px) rotateY(-36deg) rotateZ(-2deg) scale(0.7); }
+  .rl3d-slide[data-pos="-2"] { transform: translateX(-85%) translateZ(-220px) rotateY(36deg) rotateZ(2deg) scale(0.7); }
+  .rl3d-play { width: 48px; height: 48px; font-size: 0.95rem; }
+  .rl3d-title { font-size: 0.76rem; }
+  .rl3d-overlay { padding: 2.4rem 0.75rem 0.75rem; }
+  .rl3d-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+}
+/* =========================================================
+   3D ISOMETRIC STACKED PHOTO CAROUSEL — About section
+   ========================================================= */
+.ab3d-wrap {
+  position: relative;
+  perspective: 1600px;
+  perspective-origin: 50% 50%;
+  overflow: hidden;
+  padding: 1rem 0;
+  margin: 0 0 1.6rem;
+  min-height: 340px;
+}
+
+.ab3d-stage {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  transform-style: preserve-3d;
+}
+
+.ab3d-slide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 340px;
+  height: 250px;
+  margin-left: -170px;
+  margin-top: -125px;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.7s ease,
+    filter 0.7s ease;
+  cursor: pointer;
+  will-change: transform, opacity, filter;
+}
+
+.ab3d-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 48px -16px rgba(0,0,0,.85);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.ab3d-slide[data-pos="0"] .ab3d-card {
+  border-color: rgba(var(--accent-rgb), .6);
+  box-shadow:
+    0 24px 48px -16px rgba(0,0,0,.9),
+    0 0 0 1px rgba(var(--accent-rgb), .4),
+    0 0 50px -10px rgba(var(--accent-rgb), .45);
+}
+
+.ab3d-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #0a0f0d;
+  overflow: hidden;
+}
+
+.ab3d-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.ab3d-slide[data-pos="0"]:hover .ab3d-thumb img { transform: scale(1.05); }
+
+.ab3d-caption {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 1.8rem 1rem 0.85rem;
+  background: linear-gradient(0deg, rgba(5,10,8,.96), transparent);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+
+.ab3d-slide[data-pos="0"]:hover .ab3d-caption { opacity: 1; }
+
+/* --- Position states --- */
+.ab3d-slide[data-pos="0"] {
+  transform: translateX(0) translateZ(100px) rotateY(0deg) rotateZ(-1.5deg) scale(1);
+  opacity: 1;
+  z-index: 10;
+}
+.ab3d-slide[data-pos="1"] {
+  transform: translateX(40%) translateZ(-60px) rotateY(-26deg) rotateZ(-1.5deg) scale(.85);
+  opacity: .92;
+  z-index: 8;
+  filter: brightness(.55) saturate(.7);
+}
+.ab3d-slide[data-pos="-1"] {
+  transform: translateX(-40%) translateZ(-60px) rotateY(26deg) rotateZ(1.5deg) scale(.85);
+  opacity: .92;
+  z-index: 8;
+  filter: brightness(.55) saturate(.7);
+}
+.ab3d-slide[data-pos="2"] {
+  transform: translateX(72%) translateZ(-200px) rotateY(-36deg) rotateZ(-1.5deg) scale(.68);
+  opacity: .55;
+  z-index: 6;
+  filter: brightness(.3) saturate(.5);
+}
+.ab3d-slide[data-pos="-2"] {
+  transform: translateX(-72%) translateZ(-200px) rotateY(36deg) rotateZ(1.5deg) scale(.68);
+  opacity: .55;
+  z-index: 6;
+  filter: brightness(.3) saturate(.5);
+}
+.ab3d-slide[data-pos="hide"] {
+  transform: translateX(0) translateZ(-500px) scale(.5);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- Controls --- */
+.ab3d-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 20;
+}
+
+.ab3d-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: .85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.ab3d-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), .12);
+  transform: scale(1.08);
+  box-shadow: 0 0 18px -2px rgba(var(--accent-rgb), .55);
+}
+
+.ab3d-dots {
+  display: flex;
+  gap: .45rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 220px;
+}
+
+.ab3d-dots span {
+  width: 6px; height: 6px;
+  border-radius: 40px;
+  background: rgba(var(--accent-rgb), .24);
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+.ab3d-dots span.active {
+  background: var(--accent);
+  width: 20px;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), .8);
+}
+
+/* --- Responsive --- */
+@media (max-width: 820px) {
+  .ab3d-wrap { min-height: 280px; }
+  .ab3d-stage { height: 240px; }
+  .ab3d-slide { width: 280px; height: 205px; margin-left: -140px; margin-top: -102px; }
+  .ab3d-slide[data-pos="1"]  { transform: translateX(38%) translateZ(-60px) rotateY(-24deg) rotateZ(-1.5deg) scale(.85); }
+  .ab3d-slide[data-pos="-1"] { transform: translateX(-38%) translateZ(-60px) rotateY(24deg) rotateZ(1.5deg) scale(.85); }
+}
+
+@media (max-width: 480px) {
+  .ab3d-wrap { min-height: 240px; padding: .5rem 0; }
+  .ab3d-stage { height: 200px; }
+  .ab3d-slide { width: 230px; height: 170px; margin-left: -115px; margin-top: -85px; }
+  .ab3d-slide[data-pos="1"]  { transform: translateX(34%) translateZ(-60px) rotateY(-22deg) rotateZ(-1.5deg) scale(.85); }
+  .ab3d-slide[data-pos="-1"] { transform: translateX(-34%) translateZ(-60deg) rotateY(22deg) rotateZ(1.5deg) scale(.85); }
+  .ab3d-slide[data-pos="2"]  { transform: translateX(58%) translateZ(-200px) rotateY(-32deg) rotateZ(-1.5deg) scale(.68); }
+  .ab3d-slide[data-pos="-2"] { transform: translateX(-58%) translateZ(-200px) rotateY(32deg) rotateZ(1.5deg) scale(.68); }
+  .ab3d-btn { width: 36px; height: 36px; font-size: .8rem; }
+}
 </style>
 </head>
 <body>
@@ -1005,7 +1750,7 @@ img,video,iframe,canvas,svg{max-width:100%}
     <div class="hero-role">Stock Controller<br>Remote Virtual Assistant</div>
   </div>
 </header>
-<div class="wrap"><div class="funnel"><div><b>Track</b><span>01 · inventory</span></div><div><b>Reconcile</b><span>02 · accuracy</span></div><div><b>Report</b><span>03 · insights</span></div><div><b>Automate</b><span>04 · Excel &amp; VBA</span></div></div></div>
+<div class="wrap"><div class="funnel"><div><b>Inventory Application</b><span>01.</span></div><div><b>Web Development</b><span>02.</span></div><div><b>Excel & VBA</b><span>03.</span></div><div><b>Automation</b><span>04.</span></div></div></div>
 
 <!-- TOOLS MARQUEE -->
 <section class="tools-band" aria-label="Tools and technologies">
@@ -1018,29 +1763,34 @@ img,video,iframe,canvas,svg{max-width:100%}
 <!-- ABOUT -->
 <section class="section about2" id="about">
   <div class="wrap">
-    <span class="eyebrow">01 / Behind the work</span>
-    <h2 class="about-title reveal">i don't just count the stock.<br><em>i make the numbers make sense.</em></h2>
+    <span class="eyebrow">01 / Inventory Management Application</span>
+    <h2 class="about-title reveal">I can build Multi-tenant<br><em>All in One POS Inventory Application.</em></h2>
     <div class="about2-grid">
       <div class="about2-copy reveal-left">
-        <p class="about-quote">"Possessing <span>7 years</span> of experience as a Stock Controller in the retail industry — inventory control, stock reconciliation, data analysis, and ERP management, alongside remote Virtual Assistant work."</p>
-        <p>My core background is in inventory: reconciling stock, running ERP systems, and reporting on what's moving and what isn't so the rest of the team can plan around real numbers.</p>
-        <p>Alongside that, I've worked as a Remote Virtual Assistant handling data entry, database maintenance, document control, and inbox management — the kind of admin work that keeps a business running quietly in the background.</p>
-        <p class="about2-rule">If it doesn't keep the business accurate, it doesn't belong.</p>
+      <div class="ab3d-wrap reveal-left">
+  <div class="ab3d-stage" id="about3dStage"></div>
+  <div class="ab3d-controls">
+    <button class="ab3d-btn" id="ab3dPrev" aria-label="Previous photo"><i class="fas fa-chevron-left"></i></button>
+    <div class="ab3d-dots" id="about3dDots"></div>
+    <button class="ab3d-btn" id="ab3dNext" aria-label="Next photo"><i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+        
         <div class="stat-card">
-          <div><i class="fas fa-chart-simple"></i><span><b>7+ Years</b><small>Stock control &amp; inventory</small></span></div>
-          <div><i class="fas fa-layer-group"></i><span><b>Inventory / ERP / Excel</b></span></div>
+          <div><i class="fas fa-chart-simple"></i><span><b>5+ Clients</b><small>Avail My <A:link>Application</A:link></small></span></div>
+          <div><i class="fas fa-layer-group"></i><span><b>All in One</b><small>POS Inventory Application</small></span></div>
           <div><i class="fas fa-location-dot"></i><span><b>Manila → Saudi Arabia</b><small>Remote-ready</small></span></div>
         </div>
       </div>
       <div class="about-stage reveal-right">
-        <div class="about-ghost" aria-hidden="true">ACCURACY.</div>
+        <div class="about-ghost" aria-hidden="true">POS.</div>
         <div class="ph" data-ph="Add your photo: photo-about.png (transparent cut-out)">
           <img src="new2.png" alt="Courteny Madronero" onerror="this.parentNode.classList.add('nophoto')" />
         </div>
-        <span class="callout l" style="top:30%">Inventory<br>Management</span>
-        <span class="callout r" style="top:34%">Stock<br>reconciliation</span>
-        <span class="callout l" style="top:76%">ERP<br>SAP &amp; Oracle</span>
-        <span class="callout r" style="top:80%">Excel VBA<br>&amp; automation</span>
+        <span class="callout l" style="top:30%">Built-in<br>Scanner</span>
+        <span class="callout r" style="top:34%">Dashboard<br>Overview</span>
+        <span class="callout l" style="top:76%">Mobile Friendly</span>
+        <span class="callout r" style="top:80%">Sales Monitoring<br>&amp; Reporting</span>
       </div>
     </div>
   </div>
@@ -1251,30 +2001,36 @@ img,video,iframe,canvas,svg{max-width:100%}
       <p>Short, practical walkthroughs of the same spreadsheet tools used above.</p>
     </div>
     <div class="carousel-header">
-      <h3 style="font-family:var(--display); text-transform:uppercase; font-size:1.1rem; letter-spacing:0.02em;"><i class="fab fa-youtube" style="color:#ff4a4a;"></i> Youtube Videos</h3>
-      <div class="carousel-controls">
-        <button class="prev-slide-btn" type="button" aria-label="Previous video"><i class="fas fa-chevron-left"></i></button>
-        <button class="next-slide-btn" type="button" aria-label="Next video"><i class="fas fa-chevron-right"></i></button>
-      </div>
-    </div>
-    <div class="carousel-wrapper reveal-scale" id="youtubeCarousel">
-      <div class="carousel-track" id="youtubeTrack"></div>
-    </div>
-    <div class="carousel-dots" id="youtubeDots"></div>
+  <h3 style="font-family:var(--display); text-transform:uppercase; font-size:1.1rem; letter-spacing:0.02em;">
+    <i class="fab fa-youtube" style="color:#ff4a4a;"></i> Youtube Videos
+  </h3>
+</div>
 
-    <div class="reels-carousel" style="margin-top:2.8rem;">
-      <div class="carousel-header">
-        <h3 style="font-family:var(--display); text-transform:uppercase; font-size:1.1rem; letter-spacing:0.02em;"><i class="fas fa-film" style="color:var(--accent);"></i> Reels · Shorts</h3>
-        <div class="carousel-controls">
-          <button class="prev-reel-btn" type="button" aria-label="Previous reel"><i class="fas fa-chevron-left"></i></button>
-          <button class="next-reel-btn" type="button" aria-label="Next reel"><i class="fas fa-chevron-right"></i></button>
-        </div>
-      </div>
-      <div class="carousel-wrapper reveal-scale" id="reelsCarousel">
-        <div class="carousel-track" id="reelsTrack"></div>
-      </div>
-      <div class="carousel-dots" id="reelsDots"></div>
-    </div>
+<div class="yt3d-wrap reveal-scale">
+  <div class="yt3d-stage" id="youtube3dStage"></div>
+</div>
+
+<div class="yt3d-controls">
+  <button class="yt3d-btn" id="yt3dPrev" aria-label="Previous video"><i class="fas fa-chevron-left"></i></button>
+  <div class="yt3d-dots" id="youtube3dDots"></div>
+  <button class="yt3d-btn" id="yt3dNext" aria-label="Next video"><i class="fas fa-chevron-right"></i></button>
+</div>
+
+  <div class="carousel-header" style="margin-top:3rem;">
+  <h3 style="font-family:var(--display); text-transform:uppercase; font-size:1.1rem; letter-spacing:0.02em;">
+    <i class="fas fa-film" style="color:var(--accent);"></i> Reels · Shorts
+  </h3>
+</div>
+
+<div class="rl3d-wrap reveal-scale">
+  <div class="rl3d-stage" id="reels3dStage"></div>
+</div>
+
+<div class="rl3d-controls">
+  <button class="rl3d-btn" id="rl3dPrev" aria-label="Previous reel"><i class="fas fa-chevron-left"></i></button>
+  <div class="rl3d-dots" id="reels3dDots"></div>
+  <button class="rl3d-btn" id="rl3dNext" aria-label="Next reel"><i class="fas fa-chevron-right"></i></button>
+</div>
   </div>
 </section>
 
@@ -1649,28 +2405,6 @@ img,video,iframe,canvas,svg{max-width:100%}
     apply: applyTransform,
     build: buildInfiniteCarousel
   };
-
-  const reelIds = ['0g1xCtgvU8E','hyJHn_iT_Hk','rtF6Juzz1Qg','1OEA4YcqTO4'];
-  buildInfiniteCarousel('reelsTrack', 'reelsDots', reelIds);
-
-  document.querySelector('.prev-slide-btn')?.addEventListener('click', () => prevInfinite('youtubeTrack', 'youtubeDots'));
-  document.querySelector('.next-slide-btn')?.addEventListener('click', () => nextInfinite('youtubeTrack', 'youtubeDots'));
-  document.querySelector('.prev-reel-btn')?.addEventListener('click', () => prevInfinite('reelsTrack', 'reelsDots'));
-  document.querySelector('.next-reel-btn')?.addEventListener('click', () => nextInfinite('reelsTrack', 'reelsDots'));
-
-  let youtubeAuto = setInterval(() => nextInfinite('youtubeTrack', 'youtubeDots'), 5000);
-  document.getElementById('youtubeCarousel')?.addEventListener('mouseenter', () => clearInterval(youtubeAuto));
-  document.getElementById('youtubeCarousel')?.addEventListener('mouseleave', () => {
-    clearInterval(youtubeAuto);
-    youtubeAuto = setInterval(() => nextInfinite('youtubeTrack', 'youtubeDots'), 5000);
-  });
-
-  let reelAuto = setInterval(() => nextInfinite('reelsTrack', 'reelsDots'), 4000);
-  document.getElementById('reelsCarousel')?.addEventListener('mouseenter', () => clearInterval(reelAuto));
-  document.getElementById('reelsCarousel')?.addEventListener('mouseleave', () => {
-    clearInterval(reelAuto);
-    reelAuto = setInterval(() => nextInfinite('reelsTrack', 'reelsDots'), 4000);
-  });
 
   document.addEventListener('click', e => {
     const card = e.target.closest('.vid-card');
@@ -2512,8 +3246,8 @@ img,video,iframe,canvas,svg{max-width:100%}
   }
 
   function displayYouTubeVideos(videos) {
-    const track = document.getElementById('youtubeTrack');
-    if (!track) return;
+  if (!videos.length) return;
+  window.__yt3d?.setVideos(videos);
 
     track.style.transition = 'none';
     track.innerHTML = '';
@@ -2536,9 +3270,373 @@ img,video,iframe,canvas,svg{max-width:100%}
 
     window.__carousel?.makeInfinite('youtubeTrack', 'youtubeDots');
   }
+  /* =========================================================
+   5b. 3D ISOMETRIC STACKED YOUTUBE CAROUSEL
+   ========================================================= */
+let yt3dVideos = [];
+let yt3dIndex = 0;
+let yt3dAutoplay = null;
 
+function buildYt3DCard(video, isActive, activeVideoId) {
+  const id = video.id;
+  const title = video.snippet?.title || 'YouTube Video';
+  const thumb = video.snippet?.thumbnails?.high?.url
+    || video.snippet?.thumbnails?.medium?.url
+    || `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+  if (isActive && activeVideoId === id) {
+    return `<div class="yt3d-card"><div class="yt3d-thumb">
+      <iframe data-id="${id}"
+        src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div></div>`;
+  }
+
+  return `<div class="yt3d-card"><div class="yt3d-thumb">
+    <img src="${thumb}" alt="${(title+'').replace(/"/g,'&quot;')}" loading="lazy" />
+    <button class="yt3d-play" type="button" aria-label="Play video"><i class="fas fa-play"></i></button>
+    <div class="yt3d-overlay">
+      <div class="yt3d-title">${title.replace(/</g,'&lt;')}</div>
+      <div class="yt3d-channel"><i class="fab fa-youtube"></i>Kurt Creates</div>
+    </div>
+  </div></div>`;
+}
+
+function renderYt3D(activeVideoId = null) {
+  const stage = document.getElementById('youtube3dStage');
+  const dots  = document.getElementById('youtube3dDots');
+  if (!stage || !yt3dVideos.length) return;
+
+  const n = yt3dVideos.length;
+  stage.innerHTML = '';
+
+  yt3dVideos.forEach((video, i) => {
+    let offset = i - yt3dIndex;
+    if (offset >  n / 2) offset -= n;
+    if (offset < -n / 2) offset += n;
+
+    let posAttr = offset;
+    if (offset >  2) posAttr = 'hide';
+    if (offset < -2) posAttr = 'hide';
+
+    const isActive = offset === 0;
+    const slide = document.createElement('div');
+    slide.className = 'yt3d-slide';
+    slide.setAttribute('data-pos', posAttr);
+    slide.dataset.videoId = video.id;
+    slide.dataset.index = i;
+    slide.innerHTML = buildYt3DCard(video, isActive, activeVideoId);
+
+    slide.addEventListener('click', () => {
+      if (isActive) {
+        // Play the video in-place
+        const activeSlide = stage.querySelector('.yt3d-slide[data-pos="0"]');
+        if (activeSlide) {
+          const thumbEl = activeSlide.querySelector('.yt3d-thumb');
+          if (thumbEl && !thumbEl.querySelector('iframe')) {
+            thumbEl.innerHTML = `<iframe data-id="${video.id}"
+              src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&playsinline=1"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>`;
+          }
+        }
+      } else if (posAttr !== 'hide') {
+        yt3dIndex = i;
+        renderYt3D();
+        resetYt3DAutoplay();
+      }
+    });
+
+    stage.appendChild(slide);
+  });
+
+  if (dots) {
+    dots.innerHTML = yt3dVideos.map((_, i) =>
+      `<span class="${i === yt3dIndex ? 'active' : ''}" data-i="${i}"></span>`
+    ).join('');
+    dots.querySelectorAll('span').forEach(d => {
+      d.addEventListener('click', () => {
+        yt3dIndex = parseInt(d.dataset.i, 10);
+        renderYt3D();
+        resetYt3DAutoplay();
+      });
+    });
+  }
+}
+
+function yt3dNext() {
+  if (!yt3dVideos.length) return;
+  yt3dIndex = (yt3dIndex + 1) % yt3dVideos.length;
+  renderYt3D();
+}
+function yt3dPrev() {
+  if (!yt3dVideos.length) return;
+  yt3dIndex = (yt3dIndex - 1 + yt3dVideos.length) % yt3dVideos.length;
+  renderYt3D();
+}
+function resetYt3DAutoplay() {
+  clearInterval(yt3dAutoplay);
+  yt3dAutoplay = setInterval(yt3dNext, 6000);
+}
+
+document.getElementById('yt3dNext')?.addEventListener('click', () => { yt3dNext(); resetYt3DAutoplay(); });
+document.getElementById('yt3dPrev')?.addEventListener('click', () => { yt3dPrev(); resetYt3DAutoplay(); });
+
+/* Pause autoplay while hovering the stack */
+document.querySelector('.yt3d-wrap')?.addEventListener('mouseenter', () => clearInterval(yt3dAutoplay));
+document.querySelector('.yt3d-wrap')?.addEventListener('mouseleave', resetYt3DAutoplay);
+
+/* Keyboard nav */
+document.addEventListener('keydown', e => {
+  if (!document.activeElement) return;
+  if (!document.activeElement.closest('.yt3d-wrap') &&
+      !document.activeElement.closest('.yt3d-controls')) return;
+  if (e.key === 'ArrowRight') yt3dNext();
+  if (e.key === 'ArrowLeft')  yt3dPrev();
+});
+
+/* Expose for the Firebase module to feed videos in */
+window.__yt3d = {
+  setVideos(videos) {
+    yt3dVideos = videos;
+    yt3dIndex = 0;
+    renderYt3D();
+    resetYt3DAutoplay();
+  }
+};
   fetchLatestVideos();
   setInterval(() => { fetchLatestVideos(); }, YOUTUBE_REFRESH_INTERVAL);
+
+  /* =========================================================
+   5c. 3D ISOMETRIC STACKED REELS CAROUSEL
+   ========================================================= */
+const REEL_IDS = ['0g1xCtgvU8E','hyJHn_iT_Hk','rtF6Juzz1Qg','1OEA4YcqTO4'];
+const reelVideos = REEL_IDS.map(id => ({ id, snippet: { title: 'Short · Excel Trick' } }));
+
+let rl3dIndex = 0;
+let rl3dAutoplay = null;
+
+function buildRl3DCard(video, isActive, activeVideoId) {
+  const id = video.id;
+  const title = video.snippet?.title || 'Short · Excel Trick';
+  const thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+  if (isActive && activeVideoId === id) {
+    return `<div class="rl3d-card"><div class="rl3d-thumb">
+      <iframe data-id="${id}"
+        src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div></div>`;
+  }
+
+  return `<div class="rl3d-card"><div class="rl3d-thumb">
+    <img src="${thumb}" alt="Short" loading="lazy" />
+    <button class="rl3d-play" type="button" aria-label="Play short"><i class="fas fa-play"></i></button>
+    <div class="rl3d-overlay">
+      <span class="rl3d-badge"><i class="fas fa-bolt"></i> Short</span>
+      <div class="rl3d-title">${(title+'').replace(/</g,'&lt;')}</div>
+      <div class="rl3d-channel"><i class="fab fa-youtube"></i>Kurt Creates</div>
+    </div>
+  </div></div>`;
+}
+
+function renderRl3D(activeVideoId = null) {
+  const stage = document.getElementById('reels3dStage');
+  const dots  = document.getElementById('reels3dDots');
+  if (!stage || !reelVideos.length) return;
+
+  const n = reelVideos.length;
+  stage.innerHTML = '';
+
+  reelVideos.forEach((video, i) => {
+    let offset = i - rl3dIndex;
+    if (offset >  n / 2) offset -= n;
+    if (offset < -n / 2) offset += n;
+
+    let posAttr = offset;
+    if (offset >  2) posAttr = 'hide';
+    if (offset < -2) posAttr = 'hide';
+
+    const isActive = offset === 0;
+    const slide = document.createElement('div');
+    slide.className = 'rl3d-slide';
+    slide.setAttribute('data-pos', posAttr);
+    slide.dataset.videoId = video.id;
+    slide.dataset.index = i;
+    slide.innerHTML = buildRl3DCard(video, isActive, activeVideoId);
+
+    slide.addEventListener('click', () => {
+      if (isActive) {
+        const activeSlide = stage.querySelector('.rl3d-slide[data-pos="0"]');
+        if (activeSlide) {
+          const thumbEl = activeSlide.querySelector('.rl3d-thumb');
+          if (thumbEl && !thumbEl.querySelector('iframe')) {
+            thumbEl.innerHTML = `<iframe data-id="${video.id}"
+              src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&playsinline=1"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>`;
+          }
+        }
+      } else if (posAttr !== 'hide') {
+        rl3dIndex = i;
+        renderRl3D();
+        resetRl3DAutoplay();
+      }
+    });
+
+    stage.appendChild(slide);
+  });
+
+  if (dots) {
+    dots.innerHTML = reelVideos.map((_, i) =>
+      `<span class="${i === rl3dIndex ? 'active' : ''}" data-i="${i}"></span>`
+    ).join('');
+    dots.querySelectorAll('span').forEach(d => {
+      d.addEventListener('click', () => {
+        rl3dIndex = parseInt(d.dataset.i, 10);
+        renderRl3D();
+        resetRl3DAutoplay();
+      });
+    });
+  }
+}
+
+function rl3dNext() {
+  if (!reelVideos.length) return;
+  rl3dIndex = (rl3dIndex + 1) % reelVideos.length;
+  renderRl3D();
+}
+function rl3dPrev() {
+  if (!reelVideos.length) return;
+  rl3dIndex = (rl3dIndex - 1 + reelVideos.length) % reelVideos.length;
+  renderRl3D();
+}
+function resetRl3DAutoplay() {
+  clearInterval(rl3dAutoplay);
+  rl3dAutoplay = setInterval(rl3dNext, 4500);
+}
+
+document.getElementById('rl3dNext')?.addEventListener('click', () => { rl3dNext(); resetRl3DAutoplay(); });
+document.getElementById('rl3dPrev')?.addEventListener('click', () => { rl3dPrev(); resetRl3DAutoplay(); });
+
+document.querySelector('.rl3d-wrap')?.addEventListener('mouseenter', () => clearInterval(rl3dAutoplay));
+document.querySelector('.rl3d-wrap')?.addEventListener('mouseleave', resetRl3DAutoplay);
+
+document.addEventListener('keydown', e => {
+  if (!document.activeElement) return;
+  if (!document.activeElement.closest('.rl3d-wrap') &&
+      !document.activeElement.closest('.rl3d-controls')) return;
+  if (e.key === 'ArrowRight') rl3dNext();
+  if (e.key === 'ArrowLeft')  rl3dPrev();
+});
+
+/* Boot */
+renderRl3D();
+resetRl3DAutoplay();
+
+/* =========================================================
+   5d. 3D ISOMETRIC STACKED PHOTO CAROUSEL — About
+   =========================================================
+   To change the images, just swap these entries.
+   Drop the files in the same folder as index.html.
+   ========================================================= */
+const ABOUT_PHOTOS = [
+  { src: '1.png', caption: 'Inventory Management' },
+  { src: '2.png', caption: 'Stock Reconciliation' },
+  { src: '3.png', caption: 'ERP · SAP & Oracle' },
+  { src: '4.png', caption: 'Excel VBA & Automation' },
+  { src: '5.png', caption: 'Data & Reporting' }
+];
+
+let ab3dIndex = 0;
+let ab3dAutoplay = null;
+
+function renderAbout3D() {
+  const stage = document.getElementById('about3dStage');
+  const dots  = document.getElementById('about3dDots');
+  if (!stage || !ABOUT_PHOTOS.length) return;
+
+  const n = ABOUT_PHOTOS.length;
+  stage.innerHTML = '';
+
+  ABOUT_PHOTOS.forEach((photo, i) => {
+    let offset = i - ab3dIndex;
+    if (offset >  n / 2) offset -= n;
+    if (offset < -n / 2) offset += n;
+
+    let posAttr = offset;
+    if (offset >  2) posAttr = 'hide';
+    if (offset < -2) posAttr = 'hide';
+
+    const slide = document.createElement('div');
+    slide.className = 'ab3d-slide';
+    slide.setAttribute('data-pos', posAttr);
+    slide.dataset.index = i;
+
+    slide.innerHTML = `
+      <div class="ab3d-card">
+        <div class="ab3d-thumb">
+          <img src="${photo.src}" alt="${photo.caption}" loading="lazy"
+            onerror="this.parentNode.insertAdjacentHTML('beforeend',
+              '<div style=&quot;position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;color:var(--muted);font-family:var(--mono);font-size:.72rem;text-align:center;padding:1rem;background:rgba(var(--accent-rgb),.06);border:1px dashed rgba(var(--accent-rgb),.45);border-radius:12px&quot;>' +
+              '<i class=&quot;fas fa-image&quot; style=&quot;font-size:1.6rem;color:var(--accent);opacity:.7&quot;></i>' +
+              '<span>${photo.src}</span>' +
+              '<span style=&quot;opacity:.55;font-size:.62rem&quot;>Place this image here</span>' +
+              '</div>');this.style.display='none';" />
+          <div class="ab3d-caption">${photo.caption}</div>
+        </div>
+      </div>`;
+
+    slide.addEventListener('click', () => {
+      if (posAttr !== 'hide' && posAttr !== 0) {
+        ab3dIndex = i;
+        renderAbout3D();
+        resetAbout3DAutoplay();
+      }
+    });
+
+    stage.appendChild(slide);
+  });
+
+  if (dots) {
+    dots.innerHTML = ABOUT_PHOTOS.map((_, i) =>
+      `<span class="${i === ab3dIndex ? 'active' : ''}" data-i="${i}"></span>`
+    ).join('');
+    dots.querySelectorAll('span').forEach(d => {
+      d.addEventListener('click', () => {
+        ab3dIndex = parseInt(d.dataset.i, 10);
+        renderAbout3D();
+        resetAbout3DAutoplay();
+      });
+    });
+  }
+}
+
+function about3dNext() {
+  if (!ABOUT_PHOTOS.length) return;
+  ab3dIndex = (ab3dIndex + 1) % ABOUT_PHOTOS.length;
+  renderAbout3D();
+}
+function about3dPrev() {
+  if (!ABOUT_PHOTOS.length) return;
+  ab3dIndex = (ab3dIndex - 1 + ABOUT_PHOTOS.length) % ABOUT_PHOTOS.length;
+  renderAbout3D();
+}
+function resetAbout3DAutoplay() {
+  clearInterval(ab3dAutoplay);
+  ab3dAutoplay = setInterval(about3dNext, 5000);
+}
+
+document.getElementById('ab3dNext')?.addEventListener('click', () => { about3dNext(); resetAbout3DAutoplay(); });
+document.getElementById('ab3dPrev')?.addEventListener('click', () => { about3dPrev(); resetAbout3DAutoplay(); });
+
+document.querySelector('.ab3d-wrap')?.addEventListener('mouseenter', () => clearInterval(ab3dAutoplay));
+document.querySelector('.ab3d-wrap')?.addEventListener('mouseleave', resetAbout3DAutoplay);
+
+renderAbout3D();
+resetAbout3DAutoplay();
 
   // ==========================================
   // EXCEL FILE DOWNLOAD TRACKER
